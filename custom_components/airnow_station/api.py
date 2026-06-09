@@ -1,0 +1,91 @@
+"""Client for the AirNow ``/aq/data/`` (query data) endpoint.
+
+The upstream ``pyairnow`` library only wraps the observation and forecast
+endpoints, which aggregate to AirNow *reporting areas*. This module adds a
+``Data`` class written in pyairnow's house style so it can be proposed
+upstream (as ``pyairnow.data``) largely unchanged; ``AirNowDataAPI`` mirrors
+how ``WebServiceAPI`` would wire it in.
+
+This module intentionally has no Home Assistant imports so it stays
+importable standalone (see ``scripts/smoke_test.py``) and PR-ready.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Coroutine, Sequence
+from datetime import datetime
+from typing import Any
+
+from pyairnow import WebServiceAPI
+
+# Identifiers accepted by the ``parameters`` query argument. Note the
+# request spelling (``PM25``) differs from the response spelling (``PM2.5``).
+DATA_PARAMETERS: tuple[str, ...] = ("OZONE", "PM25", "PM10", "CO", "NO2", "SO2")
+
+# Sentinel AirNow uses for missing/not-yet-validated values.
+MISSING_VALUE = -999.0
+
+
+class Data:
+    """Retrieve monitor-level (per-site) data by bounding box."""
+
+    def __init__(self, request: Callable[..., Coroutine]) -> None:
+        self._request = request
+
+    async def bbox(
+        self,
+        min_longitude: float,
+        min_latitude: float,
+        max_longitude: float,
+        max_latitude: float,
+        *,
+        start_date: datetime,
+        end_date: datetime,
+        parameters: Sequence[str] = DATA_PARAMETERS,
+        data_type: str = "B",
+        monitor_type: int = 2,
+        verbose: bool = True,
+        include_raw_concentrations: bool = False,
+    ) -> list:
+        """Request site-level data rows inside a bounding box.
+
+        ``start_date``/``end_date`` must be timezone-naive UTC or
+        UTC-aware datetimes; the API expects UTC hours.
+        """
+        params: dict = {
+            "startDate": start_date.strftime("%Y-%m-%dT%H"),
+            "endDate": end_date.strftime("%Y-%m-%dT%H"),
+            "parameters": ",".join(parameters),
+            "BBOX": (
+                f"{min_longitude},{min_latitude},{max_longitude},{max_latitude}"
+            ),
+            "dataType": data_type,
+            "monitorType": str(monitor_type),
+            "verbose": str(int(verbose)),
+            "includerawconcentrations": str(int(include_raw_concentrations)),
+        }
+        return await self._request("aq/data/", params=params)
+
+
+class AirNowDataAPI(WebServiceAPI):
+    """``WebServiceAPI`` extended with the query-data endpoint."""
+
+    def __init__(self, api_key: str, *, session: Any = None) -> None:
+        super().__init__(api_key, session=session)
+        self.data = Data(self._get)
+
+
+def latest_by_parameter(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Reduce raw data rows to the most recent valid row per parameter.
+
+    Rows whose ``Value`` is the -999 sentinel are ignored. ``UTC`` strings
+    are fixed-width ISO timestamps, so lexicographic comparison is safe.
+    """
+    latest: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        if row.get("Value", MISSING_VALUE) == MISSING_VALUE:
+            continue
+        param = row["Parameter"]
+        if param not in latest or row["UTC"] > latest[param]["UTC"]:
+            latest[param] = row
+    return latest

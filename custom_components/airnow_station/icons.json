@@ -1,0 +1,15 @@
+{
+  "entity": {
+    "sensor": {
+      "ozone": { "default": "mdi:molecule" },
+      "no2": { "default": "mdi:molecule" },
+      "so2": { "default": "mdi:molecule" },
+      "ozone_aqi": { "default": "mdi:air-filter" },
+      "pm25_aqi": { "default": "mdi:air-filter" },
+      "pm10_aqi": { "default": "mdi:air-filter" },
+      "no2_aqi": { "default": "mdi:air-filter" },
+      "so2_aqi": { "default": "mdi:air-filter" },
+      "co_aqi": { "default": "mdi:air-filter" }
+    }
+  }
+}

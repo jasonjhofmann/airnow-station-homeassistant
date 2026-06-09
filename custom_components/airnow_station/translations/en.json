@@ -1,0 +1,57 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Get an API key at {api_key_url}. Stations reporting recent data within ~25 km of the coordinates will be listed in the next step.",
+        "data": {
+          "api_key": "API key",
+          "latitude": "Latitude",
+          "longitude": "Longitude"
+        },
+        "data_description": {
+          "latitude": "Center of the station search.",
+          "longitude": "Center of the station search."
+        }
+      },
+      "station": {
+        "title": "Select station",
+        "data": {
+          "station": "Monitoring station"
+        }
+      },
+      "reauth_confirm": {
+        "description": "The AirNow API rejected your key. Get a new one at {api_key_url}.",
+        "data": {
+          "api_key": "API key"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid authentication",
+      "no_stations": "No stations reported data near these coordinates",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This station is already configured",
+      "reauth_successful": "Re-authentication was successful"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "aqi": { "name": "Air quality index" },
+      "ozone": { "name": "Ozone" },
+      "ozone_aqi": { "name": "Ozone AQI" },
+      "pm25": { "name": "PM2.5" },
+      "pm25_aqi": { "name": "PM2.5 AQI" },
+      "pm10": { "name": "PM10" },
+      "pm10_aqi": { "name": "PM10 AQI" },
+      "no2": { "name": "Nitrogen dioxide" },
+      "no2_aqi": { "name": "Nitrogen dioxide AQI" },
+      "so2": { "name": "Sulphur dioxide" },
+      "so2_aqi": { "name": "Sulphur dioxide AQI" },
+      "co": { "name": "Carbon monoxide" },
+      "co_aqi": { "name": "Carbon monoxide AQI" }
+    }
+  }
+}
