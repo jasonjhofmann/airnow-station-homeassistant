@@ -35,14 +35,19 @@ Until this repo is in the HACS default store, add it as a custom repository:
 Settings → Devices & Services → Add Integration → **AirNow Station**.
 
 You need a free [AirNow API key](https://docs.airnowapi.org/account/request/).
-Enter the key and coordinates; every station that reported data within
-~25 km in the last 3 hours is listed with its distance — pick one. Repeat to
-add more stations.
+The key is entered **once**, creating an account entry. Stations are then
+added to that account as subentries: open the AirNow Station card and choose
+**Add monitoring station**, enter coordinates, and every station that
+reported data within ~25 km in the last 3 hours is listed with its
+distance — pick one. Repeat for as many stations as you like; duplicates
+are rejected by AQS code.
 
 ## Entities
 
-One service device per station. Sensors are created only for the parameters
-the station actually reports (of: ozone, PM2.5, PM10, NO₂, SO₂, CO):
+One service device per station (each tied to its subentry, so removing a
+station cleans up its device and entities). Sensors are created only for
+the parameters the station actually reports (of: ozone, PM2.5, PM10, NO₂,
+SO₂, CO):
 
 | Entity | Unit | Notes |
 | --- | --- | --- |

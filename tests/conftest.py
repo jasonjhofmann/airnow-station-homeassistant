@@ -4,6 +4,17 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from homeassistant.config_entries import ConfigSubentryData
+from homeassistant.const import CONF_API_KEY, CONF_LATITUDE, CONF_LONGITUDE
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.airnow_station.const import (
+    CONF_STATION_CODE,
+    CONF_STATION_NAME,
+    DOMAIN,
+    SUBENTRY_TYPE_STATION,
+)
+
 # Realistic /aq/data/ rows (dataType=B, verbose=1) for two stations, two
 # hours, including the -999 partial-hour sentinel.
 MOUNTAINS_EDGE = {
@@ -99,6 +110,18 @@ SAMPLE_ROWS = [
     },
 ]
 
+MOUNTAINS_EDGE_SUBENTRY = ConfigSubentryData(
+    data={
+        CONF_STATION_CODE: "320030044",
+        CONF_STATION_NAME: "Mountains Edge",
+        CONF_LATITUDE: 36.0075,
+        CONF_LONGITUDE: -115.263056,
+    },
+    subentry_type=SUBENTRY_TYPE_STATION,
+    title="Mountains Edge",
+    unique_id="320030044",
+)
+
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations):
@@ -117,8 +140,18 @@ def mock_api():
             return_value=api,
         ),
         patch(
-            "custom_components.airnow_station.coordinator.AirNowDataAPI",
+            "custom_components.airnow_station.AirNowDataAPI",
             return_value=api,
         ),
     ):
         yield api
+
+
+def make_account_entry(subentries: bool = True) -> MockConfigEntry:
+    """Build an account MockConfigEntry, optionally with Mountains Edge."""
+    return MockConfigEntry(
+        domain=DOMAIN,
+        title="AirNow",
+        data={CONF_API_KEY: "test-key"},
+        subentries_data=[MOUNTAINS_EDGE_SUBENTRY] if subentries else [],
+    )

@@ -7,6 +7,8 @@ DOMAIN = "airnow_station"
 CONF_STATION_CODE = "station_code"
 CONF_STATION_NAME = "station_name"
 
+SUBENTRY_TYPE_STATION = "station"
+
 # AirNow publishes hourly with some lag; poll a few times per hour.
 DEFAULT_UPDATE_INTERVAL = timedelta(minutes=15)
 

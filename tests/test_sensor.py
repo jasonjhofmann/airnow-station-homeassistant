@@ -1,40 +1,12 @@
 """Tests for AirNow Station sensors."""
 
-from homeassistant.const import (
-    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-    CONF_API_KEY,
-    CONF_LATITUDE,
-    CONF_LONGITUDE,
-)
+from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.airnow_station.const import (
-    CONF_STATION_CODE,
-    CONF_STATION_NAME,
-    DOMAIN,
-)
+from custom_components.airnow_station.const import DOMAIN
 
-
-async def setup_entry(hass: HomeAssistant) -> MockConfigEntry:
-    """Set up a Mountains Edge config entry."""
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        unique_id="320030044",
-        title="Mountains Edge",
-        data={
-            CONF_API_KEY: "test-key",
-            CONF_STATION_CODE: "320030044",
-            CONF_STATION_NAME: "Mountains Edge",
-            CONF_LATITUDE: 36.0075,
-            CONF_LONGITUDE: -115.263056,
-        },
-    )
-    entry.add_to_hass(hass)
-    assert await hass.config_entries.async_setup(entry.entry_id)
-    await hass.async_block_till_done()
-    return entry
+from .conftest import make_account_entry
 
 
 def state_by_unique_id(hass: HomeAssistant, unique_id: str):
@@ -47,7 +19,10 @@ def state_by_unique_id(hass: HomeAssistant, unique_id: str):
 
 async def test_sensors(hass: HomeAssistant, mock_api) -> None:
     """Sensors expose the latest valid row per parameter."""
-    await setup_entry(hass)
+    entry = make_account_entry(subentries=True)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
 
     ozone = state_by_unique_id(hass, "320030044-ozone")
     assert ozone.state == "49.0"
@@ -83,3 +58,17 @@ async def test_sensors(hass: HomeAssistant, mock_api) -> None:
     # No NO2/SO2 entities for a station that doesn't report them.
     registry = er.async_get(hass)
     assert registry.async_get_entity_id("sensor", DOMAIN, "320030044-no2") is None
+
+
+async def test_entities_bound_to_subentry(hass: HomeAssistant, mock_api) -> None:
+    """Entities and device are associated with the station subentry."""
+    entry = make_account_entry(subentries=True)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    subentry_id = next(iter(entry.subentries))
+    registry = er.async_get(hass)
+    entity_id = registry.async_get_entity_id("sensor", DOMAIN, "320030044-aqi")
+    entity_entry = registry.async_get(entity_id)
+    assert entity_entry.config_subentry_id == subentry_id

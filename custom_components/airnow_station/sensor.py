@@ -23,7 +23,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import MISSING_VALUE
 from .const import AQI_CATEGORIES, ATTRIBUTION, DOMAIN
-from .coordinator import AirNowStationConfigEntry, AirNowStationDataUpdateCoordinator
+from .coordinator import AirNowAccountConfigEntry, AirNowStationDataUpdateCoordinator
 
 PARALLEL_UPDATES = 0
 
@@ -97,20 +97,21 @@ OVERALL_AQI_DESCRIPTION = SensorEntityDescription(
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: AirNowStationConfigEntry,
+    config_entry: AirNowAccountConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Set up sensors for the parameters the station actually reports."""
-    coordinator = config_entry.runtime_data
+    """Set up sensors for each station subentry's reported parameters."""
+    for subentry_id, coordinator in config_entry.runtime_data.items():
+        entities: list[SensorEntity] = [
+            AirNowStationOverallAqiSensor(coordinator)
+        ]
+        for param in coordinator.data:
+            if param not in CONCENTRATION_DESCRIPTIONS:
+                continue
+            entities.append(AirNowStationConcentrationSensor(coordinator, param))
+            entities.append(AirNowStationAqiSensor(coordinator, param))
 
-    entities: list[SensorEntity] = [AirNowStationOverallAqiSensor(coordinator)]
-    for param in coordinator.data:
-        if param not in CONCENTRATION_DESCRIPTIONS:
-            continue
-        entities.append(AirNowStationConcentrationSensor(coordinator, param))
-        entities.append(AirNowStationAqiSensor(coordinator, param))
-
-    async_add_entities(entities)
+        async_add_entities(entities, config_subentry_id=subentry_id)
 
 
 class AirNowStationEntity(

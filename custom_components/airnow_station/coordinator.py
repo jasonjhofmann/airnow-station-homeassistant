@@ -14,11 +14,10 @@ from pyairnow.errors import (
     InvalidKeyError,
 )
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_API_KEY, CONF_LATITUDE, CONF_LONGITUDE
+from homeassistant.config_entries import ConfigEntry, ConfigSubentry
+from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -34,35 +33,39 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-type AirNowStationConfigEntry = ConfigEntry[AirNowStationDataUpdateCoordinator]
+type AirNowAccountConfigEntry = ConfigEntry[
+    dict[str, AirNowStationDataUpdateCoordinator]
+]
 
 
 class AirNowStationDataUpdateCoordinator(
     DataUpdateCoordinator[dict[str, dict[str, Any]]]
 ):
-    """Poll the /aq/data/ endpoint for a single monitoring station."""
+    """Poll the /aq/data/ endpoint for a single station subentry."""
 
-    config_entry: AirNowStationConfigEntry
+    config_entry: AirNowAccountConfigEntry
 
     def __init__(
-        self, hass: HomeAssistant, config_entry: AirNowStationConfigEntry
+        self,
+        hass: HomeAssistant,
+        config_entry: AirNowAccountConfigEntry,
+        subentry: ConfigSubentry,
+        client: AirNowDataAPI,
     ) -> None:
         """Initialize."""
-        data = config_entry.data
+        data = subentry.data
+        self.subentry = subentry
         self.station_code: str = data[CONF_STATION_CODE]
         self.station_name: str = data[CONF_STATION_NAME]
         self.latitude: float = data[CONF_LATITUDE]
         self.longitude: float = data[CONF_LONGITUDE]
-
-        self.api = AirNowDataAPI(
-            data[CONF_API_KEY], session=async_get_clientsession(hass)
-        )
+        self.api = client
 
         super().__init__(
             hass,
             _LOGGER,
             config_entry=config_entry,
-            name=DOMAIN,
+            name=f"{DOMAIN} {self.station_name}",
             update_interval=DEFAULT_UPDATE_INTERVAL,
         )
 

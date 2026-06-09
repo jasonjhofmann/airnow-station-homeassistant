@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 — 2026-06-09
+
+**Breaking (pre-release, no migration):** restructured to one account-level
+config entry (API key) with **station subentries**.
+
+- Account flow asks only for the API key; reauth lives on the account entry.
+- Stations are added via "Add monitoring station" subentry flows
+  (coordinates → discovery pick-list); subentry unique ID = full AQS code,
+  so duplicate stations are rejected per account.
+- One shared API client; one coordinator per station subentry; entities and
+  devices are bound to their subentry (removing a station cleans them up).
+- Entry reloads automatically when subentries change.
+
 ## 0.1.0 — 2026-06-09
 
 Initial scaffold.
