@@ -16,14 +16,13 @@ from homeassistant.const import (
     CONCENTRATION_PARTS_PER_MILLION,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import MISSING_VALUE
-from .const import AQI_CATEGORIES, ATTRIBUTION, DOMAIN
+from .const import AQI_CATEGORIES
 from .coordinator import AirNowAccountConfigEntry, AirNowStationDataUpdateCoordinator
+from .entity import AirNowStationEntity
 
 PARALLEL_UPDATES = 0
 
@@ -112,29 +111,6 @@ async def async_setup_entry(
             entities.append(AirNowStationAqiSensor(coordinator, param))
 
         async_add_entities(entities, config_subentry_id=subentry_id)
-
-
-class AirNowStationEntity(
-    CoordinatorEntity[AirNowStationDataUpdateCoordinator], SensorEntity
-):
-    """Base entity for a monitoring station."""
-
-    _attr_attribution = ATTRIBUTION
-    _attr_has_entity_name = True
-
-    def __init__(self, coordinator: AirNowStationDataUpdateCoordinator) -> None:
-        """Initialize."""
-        super().__init__(coordinator)
-        first_row = next(iter(coordinator.data.values()))
-        agency = (first_row.get("AgencyName") or "").strip() or None
-        self._attr_device_info = DeviceInfo(
-            entry_type=DeviceEntryType.SERVICE,
-            identifiers={(DOMAIN, coordinator.station_code)},
-            manufacturer="AirNow",
-            model=agency,
-            name=coordinator.station_name,
-            configuration_url="https://www.airnow.gov/",
-        )
 
 
 class AirNowStationParameterSensor(AirNowStationEntity):

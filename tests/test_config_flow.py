@@ -178,3 +178,45 @@ async def test_duplicate_station_subentry_aborts(
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "already_configured"
     assert len(entry.subentries) == 1
+
+
+async def test_reauth_flow(hass: HomeAssistant, mock_api) -> None:
+    """Reauth rejects a bad key, then accepts a good one."""
+    entry = make_account_entry(subentries=True)
+    entry.add_to_hass(hass)
+
+    result = await entry.start_reauth_flow(hass)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reauth_confirm"
+
+    mock_api.data.bbox.side_effect = InvalidKeyError("Invalid API key")
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_API_KEY: "bad-key"}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": "invalid_auth"}
+
+    mock_api.data.bbox.side_effect = None
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_API_KEY: "new-key"}
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reauth_successful"
+    assert entry.data[CONF_API_KEY] == "new-key"
+
+
+async def test_reauth_empty_response_is_valid(
+    hass: HomeAssistant, mock_api
+) -> None:
+    """An empty discovery result during reauth still proves the key works."""
+    entry = make_account_entry(subentries=True)
+    entry.add_to_hass(hass)
+
+    result = await entry.start_reauth_flow(hass)
+    mock_api.data.bbox.side_effect = EmptyResponseError("No data was returned")
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_API_KEY: "new-key"}
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reauth_successful"
+    assert entry.data[CONF_API_KEY] == "new-key"

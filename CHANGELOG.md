@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.1 — 2026-06-09
+
+Bronze quality-scale closure (no functional changes).
+
+- In-tree brand assets (icon/logo + dark variants, original artwork;
+  `scripts/generate_brand.py` regenerates them).
+- Base entity moved to `entity.py` (common-modules pattern).
+- Reauth flow tests (bad key, recovery, empty-response-still-valid).
+- README: Removal section.
+- `quality_scale.yaml`: Bronze rules all done/exempt.
+
 ## 0.2.0 — 2026-06-09
 
 **Breaking (pre-release, no migration):** restructured to one account-level

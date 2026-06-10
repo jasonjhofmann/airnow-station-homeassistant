@@ -58,6 +58,12 @@ SO₂, CO):
 Data is hourly (polled every 15 minutes; AirNow publishes with some lag).
 AirNow's `-999` missing-value sentinels are filtered out.
 
+## Removal
+
+1. To remove a single station: Settings → Devices & Services → **AirNow Station** → open the account entry, then delete that station's subentry (its device and entities are removed automatically).
+2. To remove the integration entirely: delete the **AirNow Station** entry from Settings → Devices & Services, then uninstall the integration from HACS and restart Home Assistant.
+3. Optionally revoke the AirNow API key from your [AirNow account](https://docs.airnowapi.org/) if nothing else uses it.
+
 ## Upstream plans
 
 The `/aq/data/` client (`api.py`) is deliberately written in
