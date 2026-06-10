@@ -4,3 +4,6 @@ asyncio_mode = "auto"
 
 [tool.ruff]
 target-version = "py313"
+
+[tool.mypy]
+strict = true

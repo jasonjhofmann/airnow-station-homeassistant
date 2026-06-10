@@ -147,7 +147,7 @@ class AirNowStationConcentrationSensor(AirNowStationParameterSensor):
     def native_value(self) -> StateType:
         """Return the concentration."""
         row = self.coordinator.data.get(self.param)
-        return row["Value"] if row else None
+        return float(row["Value"]) if row else None
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
@@ -176,7 +176,7 @@ class AirNowStationAqiSensor(AirNowStationParameterSensor):
         row = self.coordinator.data.get(self.param)
         if row is None or row["AQI"] < 0:
             return None
-        return row["AQI"]
+        return int(row["AQI"])
 
 
 class AirNowStationOverallAqiSensor(AirNowStationEntity):
@@ -201,7 +201,7 @@ class AirNowStationOverallAqiSensor(AirNowStationEntity):
         """Return the maximum per-pollutant AQI."""
         if (dominant := self._dominant_row()) is None:
             return None
-        return dominant[1]["AQI"]
+        return int(dominant[1]["AQI"])
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
@@ -211,6 +211,6 @@ class AirNowStationOverallAqiSensor(AirNowStationEntity):
         param, row = dominant
         return {
             ATTR_DOMINANT_POLLUTANT: param,
-            ATTR_CATEGORY: AQI_CATEGORIES.get(row.get("Category")),
+            ATTR_CATEGORY: AQI_CATEGORIES.get(int(row.get("Category", -999))),
             ATTR_OBSERVED_UTC: row["UTC"],
         }

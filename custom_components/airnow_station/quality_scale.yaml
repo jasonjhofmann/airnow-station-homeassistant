@@ -167,6 +167,5 @@ rules:
     status: done
     comment: Home Assistant clientsession injected into AirNowDataAPI.
   strict-typing:
-    status: todo
-    comment: pyairnow ships py.typed; integration is typed but not yet verified
-      with mypy --strict.
+    status: done
+    comment: mypy --strict clean (CI-enforced); pyairnow ships py.typed.

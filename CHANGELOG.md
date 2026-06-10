@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.1 — 2026-06-09
+
+Platinum quality-scale closure (no functional changes).
+
+- `mypy --strict` clean across the integration; enforced in CI.
+- Tightened API types (explicit generics, no `Any` leaks from rows into
+  entity state).
+- `manifest.json` declares `quality_scale: platinum` (self-assessed;
+  custom integrations are not officially scored).
+
 ## 0.3.0 — 2026-06-09
 
 Gold quality-scale closure.

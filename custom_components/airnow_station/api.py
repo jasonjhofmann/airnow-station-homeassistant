@@ -16,7 +16,7 @@ from collections.abc import Callable, Coroutine, Sequence
 from datetime import datetime
 from typing import Any
 
-from pyairnow import WebServiceAPI
+from pyairnow.api import WebServiceAPI
 
 # Identifiers accepted by the ``parameters`` query argument. Note the
 # request spelling (``PM25``) differs from the response spelling (``PM2.5``).
@@ -29,7 +29,9 @@ MISSING_VALUE = -999.0
 class Data:
     """Retrieve monitor-level (per-site) data by bounding box."""
 
-    def __init__(self, request: Callable[..., Coroutine]) -> None:
+    def __init__(
+        self, request: Callable[..., Coroutine[Any, Any, list[dict[str, Any]]]]
+    ) -> None:
         self._request = request
 
     async def bbox(
@@ -46,13 +48,13 @@ class Data:
         monitor_type: int = 2,
         verbose: bool = True,
         include_raw_concentrations: bool = False,
-    ) -> list:
+    ) -> list[dict[str, Any]]:
         """Request site-level data rows inside a bounding box.
 
         ``start_date``/``end_date`` must be timezone-naive UTC or
         UTC-aware datetimes; the API expects UTC hours.
         """
-        params: dict = {
+        params: dict[str, str] = {
             "startDate": start_date.strftime("%Y-%m-%dT%H"),
             "endDate": end_date.strftime("%Y-%m-%dT%H"),
             "parameters": ",".join(parameters),
