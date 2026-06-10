@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.14"
       - run: pip install -r requirements_test.txt
       - run: pytest tests -q --cov=custom_components.airnow_station --cov-fail-under=95
       - run: mypy --strict custom_components/airnow_station/
