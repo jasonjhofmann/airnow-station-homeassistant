@@ -29,9 +29,7 @@ async def async_setup_entry(
     for subentry_id, subentry in entry.subentries.items():
         if subentry.subentry_type != SUBENTRY_TYPE_STATION:
             continue
-        coordinator = AirNowStationDataUpdateCoordinator(
-            hass, entry, subentry, client
-        )
+        coordinator = AirNowStationDataUpdateCoordinator(hass, entry, subentry, client)
         await coordinator.async_config_entry_first_refresh()
         coordinators[subentry_id] = coordinator
 
