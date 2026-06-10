@@ -1,2 +1,3 @@
 pyairnow==1.3.1
+pytest-cov
 pytest-homeassistant-custom-component

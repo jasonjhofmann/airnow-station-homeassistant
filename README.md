@@ -42,6 +42,23 @@ reported data within ~25 km in the last 3 hours is listed with its
 distance — pick one. Repeat for as many stations as you like; duplicates
 are rejected by AQS code.
 
+### Parameters
+
+| Step | Parameter | Description |
+| --- | --- | --- |
+| Account | API key | Your AirNow API key (free; rate limit 500 requests/hour, this integration uses 4/hour per station) |
+| Add monitoring station | Latitude / Longitude | Center of the station search (defaults to your Home Assistant home location) |
+| Add monitoring station | Monitoring station | Pick from stations that reported data within ~25 km in the last 3 hours |
+
+### Options
+
+The integration has no options flow. Polling is fixed at 15 minutes
+(AirNow publishes hourly). If the API key is rejected, Home Assistant
+prompts for reauthentication automatically; to change it proactively,
+re-enter it through that same reauth prompt (Settings → Devices &
+Services → AirNow Station → Reconfigure is planned but not yet
+implemented — see quality_scale.yaml).
+
 ## Entities
 
 One service device per station (each tied to its subentry, so removing a

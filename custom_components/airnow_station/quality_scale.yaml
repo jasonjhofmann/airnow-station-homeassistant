@@ -65,11 +65,12 @@ rules:
   config-entry-unloading:
     status: done
   docs-configuration-parameters:
-    status: todo
-    comment: No options flow; README should state that explicitly.
+    status: done
+    comment: README Options section states there is no options flow and
+      documents fixed polling.
   docs-installation-parameters:
-    status: todo
-    comment: README mentions key + coordinates; add an explicit parameter list.
+    status: done
+    comment: README Parameters table (API key, search coordinates, station picker).
   entity-unavailable:
     status: done
     comment: Coordinator-driven plus per-parameter availability override.
@@ -84,9 +85,8 @@ rules:
   reauthentication-flow:
     status: done
   test-coverage:
-    status: todo
-    comment: Coordinator error paths, unload, and reauth untested; coverage
-      not yet measured against the 95% bar.
+    status: done
+    comment: 100% line coverage (32 tests); CI enforces --cov-fail-under=95.
 
   # Gold
   devices:

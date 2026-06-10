@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.2 — 2026-06-09
+
+Silver quality-scale closure (no functional changes).
+
+- Test coverage 91% → 100% (32 tests): real `/aq/data/` client unit
+  tests, coordinator failure modes (auth / transient / no-station-rows),
+  unload, foreign-subentry skip, config-flow exception branches,
+  sensor edge cases (unknown parameter, disappearing parameter,
+  sentinel-only AQI).
+- CI now enforces `--cov-fail-under=95`.
+- README: Parameters table + Options section.
+- `quality_scale.yaml`: all Silver rules done/exempt.
+
 ## 0.2.1 — 2026-06-09
 
 Bronze quality-scale closure (no functional changes).

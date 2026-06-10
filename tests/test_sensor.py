@@ -72,3 +72,106 @@ async def test_entities_bound_to_subentry(hass: HomeAssistant, mock_api) -> None
     entity_id = registry.async_get_entity_id("sensor", DOMAIN, "320030044-aqi")
     entity_entry = registry.async_get(entity_id)
     assert entity_entry.config_subentry_id == subentry_id
+
+
+async def test_unknown_parameter_ignored(hass: HomeAssistant, mock_api) -> None:
+    """A parameter with no sensor description creates no entity."""
+    from .conftest import MOUNTAINS_EDGE, SAMPLE_ROWS
+
+    mock_api.data.bbox.return_value = SAMPLE_ROWS + [
+        {
+            **MOUNTAINS_EDGE,
+            "UTC": "2026-06-09T19:00",
+            "Parameter": "NOX",
+            "Unit": "PPB",
+            "Value": 5.0,
+            "RawConcentration": 5.0,
+            "AQI": 1,
+            "Category": 1,
+        }
+    ]
+    entry = make_account_entry(subentries=True)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    registry = er.async_get(hass)
+    assert registry.async_get_entity_id("sensor", DOMAIN, "320030044-nox") is None
+    # Overall AQI unaffected by the low-AQI unknown parameter.
+    assert state_by_unique_id(hass, "320030044-aqi").state == "45"
+
+
+async def test_parameter_disappearing_marks_unavailable(
+    hass: HomeAssistant, mock_api
+) -> None:
+    """A parameter missing from a later update goes unavailable."""
+    from .conftest import SAMPLE_ROWS
+
+    entry = make_account_entry(subentries=True)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert state_by_unique_id(hass, "320030044-ozone").state == "49.0"
+
+    # Next poll: only PM2.5 reports.
+    mock_api.data.bbox.return_value = [
+        row for row in SAMPLE_ROWS if row["Parameter"] == "PM2.5"
+    ]
+    coordinator = next(iter(entry.runtime_data.values()))
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+
+    assert state_by_unique_id(hass, "320030044-ozone").state == "unavailable"
+    assert state_by_unique_id(hass, "320030044-pm25").state == "3.3"
+    overall = state_by_unique_id(hass, "320030044-aqi")
+    assert overall.state == "18"
+    assert overall.attributes["dominant_pollutant"] == "PM2.5"
+
+
+async def test_overall_aqi_unknown_when_no_valid_aqi(
+    hass: HomeAssistant, mock_api
+) -> None:
+    """Only sentinel AQIs (e.g. CO-only station) -> overall AQI unknown."""
+    from .conftest import MOUNTAINS_EDGE
+
+    mock_api.data.bbox.return_value = [
+        {
+            **MOUNTAINS_EDGE,
+            "UTC": "2026-06-09T19:00",
+            "Parameter": "CO",
+            "Unit": "PPM",
+            "Value": 0.1,
+            "RawConcentration": 0.1,
+            "AQI": -999,
+            "Category": -999,
+        }
+    ]
+    entry = make_account_entry(subentries=True)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert state_by_unique_id(hass, "320030044-co").state == "0.1"
+    overall = state_by_unique_id(hass, "320030044-aqi")
+    assert overall.state == "unknown"
+    assert "dominant_pollutant" not in overall.attributes
+
+
+def test_concentration_attrs_none_when_param_missing(mock_api) -> None:
+    """Attribute property guards against a parameter vanishing mid-query."""
+    from unittest.mock import MagicMock
+
+    from custom_components.airnow_station.sensor import (
+        AirNowStationConcentrationSensor,
+    )
+
+    coordinator = MagicMock()
+    coordinator.station_code = "320030044"
+    coordinator.station_name = "Mountains Edge"
+    coordinator.data = {
+        "PM2.5": {"UTC": "2026-06-09T19:00", "Value": 3.3, "AgencyName": "Test"}
+    }
+    sensor = AirNowStationConcentrationSensor(coordinator, "PM2.5")
+    coordinator.data = {}
+    assert sensor.extra_state_attributes is None
+    assert sensor.native_value is None

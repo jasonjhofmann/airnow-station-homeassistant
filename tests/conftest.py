@@ -147,11 +147,23 @@ def mock_api():
         yield api
 
 
-def make_account_entry(subentries: bool = True) -> MockConfigEntry:
+def make_account_entry(
+    subentries: bool = True, foreign_subentry: bool = False
+) -> MockConfigEntry:
     """Build an account MockConfigEntry, optionally with Mountains Edge."""
+    subentries_data = [MOUNTAINS_EDGE_SUBENTRY] if subentries else []
+    if foreign_subentry:
+        subentries_data.append(
+            ConfigSubentryData(
+                data={},
+                subentry_type="something_else",
+                title="Foreign",
+                unique_id="foreign-1",
+            )
+        )
     return MockConfigEntry(
         domain=DOMAIN,
         title="AirNow",
         data={CONF_API_KEY: "test-key"},
-        subentries_data=[MOUNTAINS_EDGE_SUBENTRY] if subentries else [],
+        subentries_data=subentries_data,
     )

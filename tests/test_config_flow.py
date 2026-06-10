@@ -1,6 +1,6 @@
 """Tests for the AirNow Station config and subentry flows."""
 
-from pyairnow.errors import EmptyResponseError, InvalidKeyError
+from pyairnow.errors import AirNowError, EmptyResponseError, InvalidKeyError
 import pytest
 
 from homeassistant.config_entries import SOURCE_USER
@@ -220,3 +220,87 @@ async def test_reauth_empty_response_is_valid(
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reauth_successful"
     assert entry.data[CONF_API_KEY] == "new-key"
+
+
+@pytest.mark.parametrize(
+    ("side_effect", "error"),
+    [
+        (AirNowError("api down"), "cannot_connect"),
+        (RuntimeError("surprise"), "unknown"),
+    ],
+)
+async def test_account_flow_connection_errors(
+    hass: HomeAssistant, mock_api, side_effect, error
+) -> None:
+    """API/unexpected errors surface on the account step."""
+    mock_api.data.bbox.side_effect = side_effect
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_API_KEY: "test-key"}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": error}
+
+
+@pytest.mark.parametrize(
+    ("side_effect", "error"),
+    [
+        (AirNowError("api down"), "cannot_connect"),
+        (RuntimeError("surprise"), "unknown"),
+    ],
+)
+async def test_station_subentry_connection_errors(
+    hass: HomeAssistant, mock_api, side_effect, error
+) -> None:
+    """API/unexpected errors surface on the subentry search step."""
+    entry = make_account_entry(subentries=False)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    mock_api.data.bbox.side_effect = side_effect
+    result = await hass.config_entries.subentries.async_init(
+        (entry.entry_id, SUBENTRY_TYPE_STATION), context={"source": SOURCE_USER}
+    )
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], SEARCH_INPUT
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": error}
+
+
+async def test_station_subentry_rows_without_codes(
+    hass: HomeAssistant, mock_api
+) -> None:
+    """Rows lacking FullAQSCode produce no stations -> no_stations error."""
+    entry = make_account_entry(subentries=False)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    mock_api.data.bbox.return_value = [
+        {"Latitude": 36.0, "Longitude": -115.2, "Parameter": "OZONE", "Value": 40.0}
+    ]
+    result = await hass.config_entries.subentries.async_init(
+        (entry.entry_id, SUBENTRY_TYPE_STATION), context={"source": SOURCE_USER}
+    )
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], SEARCH_INPUT
+    )
+    assert result["errors"] == {"base": "no_stations"}
+
+
+async def test_reauth_cannot_connect(hass: HomeAssistant, mock_api) -> None:
+    """Connection errors during reauth keep the form open."""
+    entry = make_account_entry(subentries=True)
+    entry.add_to_hass(hass)
+
+    result = await entry.start_reauth_flow(hass)
+    mock_api.data.bbox.side_effect = AirNowError("api down")
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_API_KEY: "new-key"}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": "cannot_connect"}
