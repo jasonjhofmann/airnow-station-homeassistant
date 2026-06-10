@@ -136,7 +136,7 @@ class AirNowStationConfigFlow(ConfigFlow, domain=DOMAIN):
                 await _async_validate_key(self.hass, api_key)
             except InvalidKeyError:
                 errors["base"] = "invalid_auth"
-            except (AirNowError, InvalidJsonError, ClientConnectorError):
+            except (TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError):
                 errors["base"] = "cannot_connect"
             except Exception:
                 _LOGGER.exception("Unexpected exception")
@@ -168,8 +168,11 @@ class AirNowStationConfigFlow(ConfigFlow, domain=DOMAIN):
                 await _async_validate_key(self.hass, api_key)
             except InvalidKeyError:
                 errors["base"] = "invalid_auth"
-            except (AirNowError, InvalidJsonError, ClientConnectorError):
+            except (TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError):
                 errors["base"] = "cannot_connect"
+            except Exception:
+                _LOGGER.exception("Unexpected exception")
+                errors["base"] = "unknown"
 
             if not errors:
                 return self.async_update_reload_and_abort(
@@ -195,8 +198,11 @@ class AirNowStationConfigFlow(ConfigFlow, domain=DOMAIN):
                 await _async_validate_key(self.hass, api_key)
             except InvalidKeyError:
                 errors["base"] = "invalid_auth"
-            except (AirNowError, InvalidJsonError, ClientConnectorError):
+            except (TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError):
                 errors["base"] = "cannot_connect"
+            except Exception:
+                _LOGGER.exception("Unexpected exception")
+                errors["base"] = "unknown"
 
             if not errors:
                 return self.async_update_reload_and_abort(
@@ -246,7 +252,7 @@ class StationSubentryFlowHandler(ConfigSubentryFlow):
                 errors["base"] = "invalid_auth"
             except EmptyResponseError:
                 errors["base"] = "no_stations"
-            except (AirNowError, InvalidJsonError, ClientConnectorError):
+            except (TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError):
                 errors["base"] = "cannot_connect"
             except Exception:
                 _LOGGER.exception("Unexpected exception")

@@ -219,12 +219,17 @@ async def test_reauth_empty_response_is_valid(hass: HomeAssistant, mock_api) -> 
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reauth_successful"
     assert entry.data[CONF_API_KEY] == "new-key"
+    # The abort schedules a reload; let it settle, then unload so the
+    # coordinator's refresh timer doesn't linger past the test.
+    await hass.async_block_till_done()
+    await hass.config_entries.async_unload(entry.entry_id)
 
 
 @pytest.mark.parametrize(
     ("side_effect", "error"),
     [
         (AirNowError("api down"), "cannot_connect"),
+        (TimeoutError(), "cannot_connect"),
         (RuntimeError("surprise"), "unknown"),
     ],
 )
@@ -247,6 +252,7 @@ async def test_account_flow_connection_errors(
     ("side_effect", "error"),
     [
         (AirNowError("api down"), "cannot_connect"),
+        (TimeoutError(), "cannot_connect"),
         (RuntimeError("surprise"), "unknown"),
     ],
 )
@@ -291,18 +297,28 @@ async def test_station_subentry_rows_without_codes(
     assert result["errors"] == {"base": "no_stations"}
 
 
-async def test_reauth_cannot_connect(hass: HomeAssistant, mock_api) -> None:
-    """Connection errors during reauth keep the form open."""
+@pytest.mark.parametrize(
+    ("side_effect", "error"),
+    [
+        (AirNowError("api down"), "cannot_connect"),
+        (TimeoutError(), "cannot_connect"),
+        (RuntimeError("surprise"), "unknown"),
+    ],
+)
+async def test_reauth_connection_errors(
+    hass: HomeAssistant, mock_api, side_effect, error
+) -> None:
+    """Connection/timeout/unexpected errors during reauth keep the form open."""
     entry = make_account_entry(subentries=True)
     entry.add_to_hass(hass)
 
     result = await entry.start_reauth_flow(hass)
-    mock_api.data.bbox.side_effect = AirNowError("api down")
+    mock_api.data.bbox.side_effect = side_effect
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_API_KEY: "new-key"}
     )
     assert result["type"] is FlowResultType.FORM
-    assert result["errors"] == {"base": "cannot_connect"}
+    assert result["errors"] == {"base": error}
 
 
 async def test_reconfigure_flow(hass: HomeAssistant, mock_api) -> None:
@@ -325,6 +341,18 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_api) -> None:
         result["flow_id"], {CONF_API_KEY: "new-key"}
     )
     assert result["errors"] == {"base": "cannot_connect"}
+
+    mock_api.data.bbox.side_effect = TimeoutError()
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_API_KEY: "new-key"}
+    )
+    assert result["errors"] == {"base": "cannot_connect"}
+
+    mock_api.data.bbox.side_effect = RuntimeError("surprise")
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_API_KEY: "new-key"}
+    )
+    assert result["errors"] == {"base": "unknown"}
 
     mock_api.data.bbox.side_effect = None
     result = await hass.config_entries.flow.async_configure(

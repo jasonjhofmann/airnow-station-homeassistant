@@ -1,8 +1,40 @@
 # Changelog
 
-## Unreleased
+## 0.3.5 — 2026-06-10
 
-Tooling/CI only — no functional changes, no release.
+Resilience release: one station's outage no longer takes down the whole
+account entry, and stalled API requests time out instead of hanging.
+
+- **Per-station failure isolation.** Setup previously ran
+  `async_config_entry_first_refresh` per station, so a single station in
+  a routine AirNow data outage raised `ConfigEntryNotReady` for the
+  entire account entry — blocking restarts, adding stations, and key
+  rotation for all healthy stations. Each station coordinator now
+  refreshes independently (`async_refresh`): a failed station loads
+  degraded and keeps retrying on its 15-minute schedule while every
+  other station works normally. A station with no data at startup gets
+  no sensors yet (they derive from the parameters it reports); the entry
+  reloads automatically on its first successful poll to create them.
+  Only an account-wide auth failure — every station rejecting the key —
+  still fails setup, so reauthentication fires as before.
+- **10-second request timeout.** pyairnow's `ClientTimeout` only applies
+  to sessions it creates itself; with Home Assistant's injected shared
+  session, requests ran under aiohttp's 300 s default. `bbox()` now
+  enforces `asyncio.timeout(10)` (matching pyairnow's intended default),
+  and timeouts map to the existing error taxonomy: `UpdateFailed` in the
+  coordinator, `cannot_connect` in the flows.
+- **Reauth/reconfigure flows no longer crash on unexpected errors.**
+  Both steps only caught `InvalidKeyError` and connector-type errors; a
+  timeout, `ServerDisconnectedError`, or other surprise aborted the flow
+  with Home Assistant's generic "unknown error" page. They now redisplay
+  the form with `cannot_connect`/`unknown` (logged), matching the user
+  step's handling.
+- README: the Options section claimed reconfigure was "planned but not
+  yet implemented" — it shipped in 0.3.0; the section now documents the
+  actual Reconfigure path and the new degraded-station behavior is noted
+  under Troubleshooting.
+
+Plus the previously unreleased tooling/CI changes:
 
 - ruff `target-version` lowered from `py314` to `py313`, the declared
   support floor (HA 2025.6 → Python 3.13). Pinning to the newest
