@@ -1,9 +1,9 @@
 # AirNow Station
 
-[![GitHub release](https://img.shields.io/github/v/release/jasonjhofmann/airnow-station?include_prereleases)](https://github.com/jasonjhofmann/airnow-station/releases)
-[![Validate](https://github.com/jasonjhofmann/airnow-station/actions/workflows/validate.yml/badge.svg)](https://github.com/jasonjhofmann/airnow-station/actions/workflows/validate.yml)
+[![GitHub release](https://img.shields.io/github/v/release/jasonjhofmann/airnow-station-homeassistant?include_prereleases)](https://github.com/jasonjhofmann/airnow-station-homeassistant/releases)
+[![Validate](https://github.com/jasonjhofmann/airnow-station-homeassistant/actions/workflows/validate.yml/badge.svg)](https://github.com/jasonjhofmann/airnow-station-homeassistant/actions/workflows/validate.yml)
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![License](https://img.shields.io/github/license/jasonjhofmann/airnow-station)](LICENSE)
+[![License](https://img.shields.io/github/license/jasonjhofmann/airnow-station-homeassistant)](LICENSE)
 
 Home Assistant integration for a **single AirNow monitoring station**, using
 the AirNow [query data (`/aq/data/`)](https://docs.airnowapi.org/Data/docs)
@@ -27,7 +27,7 @@ concentrations** plus per-pollutant **AQI**.
 Until this repo is in the HACS default store, add it as a custom repository:
 
 1. HACS → ⋮ → *Custom repositories* → add
-   `https://github.com/jasonjhofmann/airnow-station` (type: Integration).
+   `https://github.com/jasonjhofmann/airnow-station-homeassistant` (type: Integration).
 2. Install **AirNow Station** and restart Home Assistant.
 
 ## Configuration
