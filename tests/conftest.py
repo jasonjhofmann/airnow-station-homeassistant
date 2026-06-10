@@ -121,6 +121,20 @@ MOUNTAINS_EDGE_SUBENTRY = ConfigSubentryData(
     unique_id="320030044",
 )
 
+# A station for which SAMPLE_ROWS never contains rows: its coordinator
+# sees an empty window (simulated data outage).
+SILENT_STATION_SUBENTRY = ConfigSubentryData(
+    data={
+        CONF_STATION_CODE: "060371234",
+        CONF_STATION_NAME: "Silent Station",
+        CONF_LATITUDE: 34.05,
+        CONF_LONGITUDE: -118.25,
+    },
+    subentry_type=SUBENTRY_TYPE_STATION,
+    title="Silent Station",
+    unique_id="060371234",
+)
+
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations):
@@ -147,10 +161,13 @@ def mock_api():
 
 
 def make_account_entry(
-    subentries: bool = True, foreign_subentry: bool = False
+    subentries: bool = True,
+    foreign_subentry: bool = False,
+    extra_subentries: list[ConfigSubentryData] | None = None,
 ) -> MockConfigEntry:
     """Build an account MockConfigEntry, optionally with Mountains Edge."""
     subentries_data = [MOUNTAINS_EDGE_SUBENTRY] if subentries else []
+    subentries_data.extend(extra_subentries or [])
     if foreign_subentry:
         subentries_data.append(
             ConfigSubentryData(

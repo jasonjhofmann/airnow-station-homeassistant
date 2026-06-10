@@ -54,10 +54,11 @@ are rejected by AQS code.
 
 The integration has no options flow. Polling is fixed at 15 minutes
 (AirNow publishes hourly). If the API key is rejected, Home Assistant
-prompts for reauthentication automatically; to change it proactively,
-re-enter it through that same reauth prompt (Settings → Devices &
-Services → AirNow Station → Reconfigure is planned but not yet
-implemented — see quality_scale.yaml).
+prompts for reauthentication automatically; to rotate the key
+proactively, use the **Reconfigure** flow instead: Settings → Devices &
+Services → AirNow Station → ⋮ (on the account entry) → Reconfigure.
+The new key is validated against the API before being saved and all
+stations on the account switch to it immediately.
 
 ## Entities
 
@@ -153,7 +154,10 @@ template:
 - **Entities `unavailable`** — the station missed its last publications
   (maintenance and data outages are common); check the station on the
   [AirNow map](https://gispub.epa.gov/airnow/). The integration recovers
-  automatically when data resumes.
+  automatically when data resumes. A station that is already down when
+  Home Assistant starts loads without sensors and creates them
+  automatically on recovery; other stations on the account are
+  unaffected either way.
 - **Re-auth prompt appears** — the key was revoked or rate-limited;
   enter a valid key, or wait out the rate-limit window.
 - **Download diagnostics** (integration page → ⋮ → Download diagnostics)

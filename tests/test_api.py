@@ -1,8 +1,13 @@
 """Unit tests for the /aq/data/ client (no Home Assistant involved)."""
 
+import asyncio
 from datetime import datetime
+from typing import Any
 from unittest.mock import AsyncMock
 
+import pytest
+
+from custom_components.airnow_station import api as api_module
 from custom_components.airnow_station.api import (
     DATA_PARAMETERS,
     AirNowDataAPI,
@@ -62,6 +67,23 @@ async def test_bbox_custom_arguments() -> None:
     assert params["monitorType"] == "0"
     assert params["verbose"] == "0"
     assert params["includerawconcentrations"] == "1"
+
+
+async def test_bbox_times_out_on_hung_request(monkeypatch) -> None:
+    """A stalled request raises TimeoutError instead of hanging.
+
+    With Home Assistant's injected session, pyairnow's own 10 s
+    ClientTimeout does not apply; bbox() must enforce its own deadline.
+    """
+
+    async def hang(endpoint: str, **kwargs: Any) -> list[dict[str, Any]]:
+        await asyncio.sleep(60)
+        return []
+
+    monkeypatch.setattr(api_module, "REQUEST_TIMEOUT", 0.05)
+    data = Data(hang)
+    with pytest.raises(TimeoutError):
+        await data.bbox(-115.27, 36.0, -115.25, 36.01, start_date=START, end_date=END)
 
 
 def test_airnow_data_api_wires_data_endpoint() -> None:

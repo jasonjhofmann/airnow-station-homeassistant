@@ -101,6 +101,11 @@ async def async_setup_entry(
 ) -> None:
     """Set up sensors for each station subentry's reported parameters."""
     for subentry_id, coordinator in config_entry.runtime_data.items():
+        if not coordinator.data:
+            # The station's first refresh failed (data outage), so there
+            # are no reported parameters to build sensors from. __init__
+            # reloads the entry once the station reports again.
+            continue
         entities: list[SensorEntity] = [AirNowStationOverallAqiSensor(coordinator)]
         for param in coordinator.data:
             if param not in CONCENTRATION_DESCRIPTIONS:

@@ -53,7 +53,10 @@ rules:
     comment: API key validated by live discovery query in the flow.
   test-before-setup:
     status: done
-    comment: async_config_entry_first_refresh per station subentry.
+    comment: Each station coordinator does a first refresh at setup; a
+      station outage degrades only that station (the entry still loads,
+      and it reloads when the station recovers), while an account-wide
+      auth failure raises ConfigEntryAuthFailed so reauth fires.
   unique-config-entry:
     status: done
     comment: _async_abort_entries_match on API key; subentry unique_id = AQS code.
