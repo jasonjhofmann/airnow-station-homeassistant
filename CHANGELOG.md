@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.4 — 2026-06-10
+
+- Brand images are now the official AirNow brand package (the same
+  assets the core `airnow` integration uses on brands.home-assistant.io),
+  replacing the placeholder map-pin wordmark. The placeholder's
+  `dark_logo` variants are removed: the AirNow package ships no dark
+  set, and needs none — white-on-blue renders identically on dark UI,
+  so Home Assistant's fallback to the standard images applies.
+
 ## 0.3.3 — 2026-06-10
 
 - Diagnostics redact set pre-lists the raw AirNow query-parameter casing
