@@ -202,7 +202,9 @@ async def test_reauth_flow(hass: HomeAssistant, mock_api) -> None:
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reauth_successful"
     assert entry.data[CONF_API_KEY] == "new-key"
-    # The abort reloads the entry; unload so no refresh timer lingers.
+    # The abort schedules a reload; let it settle, then unload so the
+    # coordinator's refresh timer doesn't linger past the test.
+    await hass.async_block_till_done()
     await hass.config_entries.async_unload(entry.entry_id)
 
 
@@ -335,5 +337,7 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_api) -> None:
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
     assert entry.data[CONF_API_KEY] == "new-key"
-    # The abort reloads the entry; unload so no refresh timer lingers.
+    # The abort schedules a reload; let it settle, then unload so the
+    # coordinator's refresh timer doesn't linger past the test.
+    await hass.async_block_till_done()
     await hass.config_entries.async_unload(entry.entry_id)
