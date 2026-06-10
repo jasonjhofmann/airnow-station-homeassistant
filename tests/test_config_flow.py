@@ -304,3 +304,33 @@ async def test_reauth_cannot_connect(hass: HomeAssistant, mock_api) -> None:
     )
     assert result["type"] is FlowResultType.FORM
     assert result["errors"] == {"base": "cannot_connect"}
+
+
+async def test_reconfigure_flow(hass: HomeAssistant, mock_api) -> None:
+    """Reconfigure validates and updates the API key."""
+    entry = make_account_entry(subentries=True)
+    entry.add_to_hass(hass)
+
+    result = await entry.start_reconfigure_flow(hass)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+
+    mock_api.data.bbox.side_effect = InvalidKeyError("Invalid API key")
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_API_KEY: "bad-key"}
+    )
+    assert result["errors"] == {"base": "invalid_auth"}
+
+    mock_api.data.bbox.side_effect = AirNowError("api down")
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_API_KEY: "new-key"}
+    )
+    assert result["errors"] == {"base": "cannot_connect"}
+
+    mock_api.data.bbox.side_effect = None
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_API_KEY: "new-key"}
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data[CONF_API_KEY] == "new-key"

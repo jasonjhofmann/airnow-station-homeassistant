@@ -180,6 +180,33 @@ class AirNowStationConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Allow changing the API key proactively."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            api_key = user_input[CONF_API_KEY].strip()
+            try:
+                await _async_validate_key(self.hass, api_key)
+            except InvalidKeyError:
+                errors["base"] = "invalid_auth"
+            except (AirNowError, InvalidJsonError, ClientConnectorError):
+                errors["base"] = "cannot_connect"
+
+            if not errors:
+                return self.async_update_reload_and_abort(
+                    self._get_reconfigure_entry(),
+                    data_updates={CONF_API_KEY: api_key},
+                )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema({vol.Required(CONF_API_KEY): str}),
+            description_placeholders={"api_key_url": _API_KEY_URL},
+            errors=errors,
+        )
+
     @classmethod
     @callback
     def async_get_supported_subentry_types(

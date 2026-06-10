@@ -12,6 +12,12 @@
         "data": {
           "api_key": "API key"
         }
+      },
+      "reconfigure": {
+        "description": "Update the AirNow API key used for all stations. Get a key at {api_key_url}.",
+        "data": {
+          "api_key": "API key"
+        }
       }
     },
     "error": {
@@ -21,7 +27,8 @@
     },
     "abort": {
       "already_configured": "An account with this API key is already configured",
-      "reauth_successful": "Re-authentication was successful"
+      "reauth_successful": "Re-authentication was successful",
+      "reconfigure_successful": "Re-configuration was successful"
     }
   },
   "config_subentries": {
@@ -59,19 +66,56 @@
   },
   "entity": {
     "sensor": {
-      "aqi": { "name": "Air quality index" },
-      "ozone": { "name": "Ozone" },
-      "ozone_aqi": { "name": "Ozone AQI" },
-      "pm25": { "name": "PM2.5" },
-      "pm25_aqi": { "name": "PM2.5 AQI" },
-      "pm10": { "name": "PM10" },
-      "pm10_aqi": { "name": "PM10 AQI" },
-      "no2": { "name": "Nitrogen dioxide" },
-      "no2_aqi": { "name": "Nitrogen dioxide AQI" },
-      "so2": { "name": "Sulphur dioxide" },
-      "so2_aqi": { "name": "Sulphur dioxide AQI" },
-      "co": { "name": "Carbon monoxide" },
-      "co_aqi": { "name": "Carbon monoxide AQI" }
+      "aqi": {
+        "name": "Air quality index"
+      },
+      "ozone": {
+        "name": "Ozone"
+      },
+      "ozone_aqi": {
+        "name": "Ozone AQI"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "pm25_aqi": {
+        "name": "PM2.5 AQI"
+      },
+      "pm10": {
+        "name": "PM10"
+      },
+      "pm10_aqi": {
+        "name": "PM10 AQI"
+      },
+      "no2": {
+        "name": "Nitrogen dioxide"
+      },
+      "no2_aqi": {
+        "name": "Nitrogen dioxide AQI"
+      },
+      "so2": {
+        "name": "Sulphur dioxide"
+      },
+      "so2_aqi": {
+        "name": "Sulphur dioxide AQI"
+      },
+      "co": {
+        "name": "Carbon monoxide"
+      },
+      "co_aqi": {
+        "name": "Carbon monoxide AQI"
+      }
+    }
+  },
+  "exceptions": {
+    "invalid_api_key": {
+      "message": "The AirNow API key is invalid"
+    },
+    "no_station_data": {
+      "message": "No recent observations for station {station}"
+    },
+    "api_error": {
+      "message": "Error communicating with the AirNow API: {error}"
     }
   }
 }

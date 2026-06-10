@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0 — 2026-06-09
+
+Gold quality-scale closure.
+
+- **Diagnostics**: download per-station data dumps from the integration
+  page (API key redacted).
+- **Reconfigure flow**: change the API key proactively (Settings →
+  Devices & Services → AirNow Station → Reconfigure).
+- **Translatable errors**: coordinator failures now raise
+  translation-keyed exceptions.
+- README: Supported stations, Examples, Known limitations,
+  Troubleshooting sections.
+- 34 tests, 100% coverage maintained.
+- `quality_scale.yaml`: Bronze + Silver + Gold all done/exempt.
+
 ## 0.2.2 — 2026-06-09
 
 Silver quality-scale closure (no functional changes).

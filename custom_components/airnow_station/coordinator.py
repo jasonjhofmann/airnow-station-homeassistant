@@ -85,18 +85,29 @@ class AirNowStationDataUpdateCoordinator(
                 include_raw_concentrations=True,
             )
         except InvalidKeyError as err:
-            raise ConfigEntryAuthFailed("Invalid AirNow API key") from err
+            raise ConfigEntryAuthFailed(
+                translation_domain=DOMAIN,
+                translation_key="invalid_api_key",
+            ) from err
         except EmptyResponseError as err:
             raise UpdateFailed(
-                f"No data returned for station {self.station_name}"
+                translation_domain=DOMAIN,
+                translation_key="no_station_data",
+                translation_placeholders={"station": self.station_name},
             ) from err
         except (AirNowError, InvalidJsonError, ClientConnectorError) as err:
-            raise UpdateFailed(err) from err
+            raise UpdateFailed(
+                translation_domain=DOMAIN,
+                translation_key="api_error",
+                translation_placeholders={"error": str(err)},
+            ) from err
 
         rows = [row for row in rows if row.get("FullAQSCode") == self.station_code]
         data = latest_by_parameter(rows)
         if not data:
             raise UpdateFailed(
-                f"No recent observations for station {self.station_name}"
+                translation_domain=DOMAIN,
+                translation_key="no_station_data",
+                translation_placeholders={"station": self.station_name},
             )
         return data

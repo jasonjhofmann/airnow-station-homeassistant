@@ -75,6 +75,80 @@ SO₂, CO):
 Data is hourly (polled every 15 minutes; AirNow publishes with some lag).
 AirNow's `-999` missing-value sentinels are filtered out.
 
+## Supported stations
+
+Any monitoring station that reports to AirNow's `/aq/data/` feed — in
+practice, US EPA AQS stations operated by state/county/tribal agencies,
+plus US embassies abroad. If a station appears on the
+[AirNow map](https://gispub.epa.gov/airnow/) it should be discoverable
+here. Stations report different parameter sets (many are ozone+PM only;
+near-road stations are typically NO₂/CO only); sensors are created for
+whatever the station actually reports.
+
+## Examples
+
+Notify when ozone at your station crosses a threshold:
+
+```yaml
+automation:
+  - alias: "Ozone advisory"
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.my_station_ozone
+        above: 55
+        for: "00:15:00"
+    actions:
+      - action: notify.mobile_app_my_phone
+        data:
+          title: "Ozone {{ states('sensor.my_station_ozone') }} ppb"
+          message: "Above 55 ppb at the monitoring station — consider closing up."
+```
+
+Template binary sensor for "any pollutant unhealthy" using the overall AQI:
+
+```yaml
+template:
+  - binary_sensor:
+      - name: "Outdoor air unhealthy"
+        state: "{{ states('sensor.my_station_air_quality_index') | int(0) > 100 }}"
+        attributes:
+          dominant: "{{ state_attr('sensor.my_station_air_quality_index', 'dominant_pollutant') }}"
+```
+
+## Known limitations
+
+- **Hourly data with publication lag.** AirNow publishes hourly; a new
+  hour's values typically appear 30–90 minutes after the hour. The
+  integration polls every 15 minutes and always shows the latest
+  *validated* row (AirNow's `-999` placeholders are skipped).
+- **CO often has no AQI.** Stations report CO concentrations, but AirNow
+  frequently returns `-999` for its AQI at ambient levels — the CO AQI
+  sensor then reads `unknown`. This is upstream behavior.
+- **ppb pollutants carry no device class.** Home Assistant's ozone/NO₂/SO₂
+  device classes require µg/m³; AirNow reports ppb, so those sensors have
+  units but no device class.
+- **Parameter sets can change.** If a station starts reporting a new
+  pollutant, reload the integration (or restart) to create its sensors.
+- **Rate limits.** AirNow keys default to 500 requests/hour; this
+  integration uses 4/hour per station.
+
+## Troubleshooting
+
+- **"Invalid authentication" during setup** — the API key is wrong or not
+  yet activated (AirNow keys can take a few minutes after signup).
+- **"No stations reported data near these coordinates"** — widen your
+  search by entering coordinates closer to a metro area; rural coverage
+  is sparse. Stations that haven't reported in the last 3 hours won't
+  appear.
+- **Entities `unavailable`** — the station missed its last publications
+  (maintenance and data outages are common); check the station on the
+  [AirNow map](https://gispub.epa.gov/airnow/). The integration recovers
+  automatically when data resumes.
+- **Re-auth prompt appears** — the key was revoked or rate-limited;
+  enter a valid key, or wait out the rate-limit window.
+- **Download diagnostics** (integration page → ⋮ → Download diagnostics)
+  to see exactly what the station last reported — the API key is redacted.
+
 ## Removal
 
 1. To remove a single station: Settings → Devices & Services → **AirNow Station** → open the account entry, then delete that station's subentry (its device and entities are removed automatically).

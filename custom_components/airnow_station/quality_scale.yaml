@@ -93,8 +93,9 @@ rules:
     status: done
     comment: One service device per station subentry.
   diagnostics:
-    status: todo
-    comment: Add diagnostics.py (redact API key; dump subentry data + latest rows).
+    status: done
+    comment: diagnostics.py - API key redacted; per-station subentry data,
+      last_update_success, and latest rows included.
   discovery:
     status: exempt
     comment: Cloud service; stations are not locally discoverable.
@@ -105,20 +106,22 @@ rules:
     status: done
     comment: README documents hourly cadence, 15-minute polling, -999 sentinels.
   docs-examples:
-    status: todo
-    comment: Add automation examples (e.g. ozone-threshold notification).
+    status: done
+    comment: README Examples (ozone-threshold automation, unhealthy-AQI
+      template binary sensor).
   docs-known-limitations:
-    status: todo
-    comment: Consolidate (-999 sentinels, CO AQI gaps, station parameter variance,
-      AirNow rate limits) into one section.
+    status: done
+    comment: README Known limitations (publication lag, CO AQI sentinels,
+      ppb device-class constraint, parameter changes, rate limits).
   docs-supported-devices:
-    status: todo
-    comment: State scope explicitly - any station reporting to AirNow /aq/data/.
+    status: done
+    comment: README Supported stations section.
   docs-supported-functions:
     status: done
     comment: README entities table.
   docs-troubleshooting:
-    status: todo
+    status: done
+    comment: README Troubleshooting section.
   docs-use-cases:
     status: done
     comment: Covered by the why-section; revisit when examples land.
@@ -138,15 +141,16 @@ rules:
   entity-translations:
     status: done
   exception-translations:
-    status: todo
-    comment: Raise translation-keyed HomeAssistantError subclasses; add
-      exceptions section to strings.json.
+    status: done
+    comment: Coordinator raises translation-keyed errors (invalid_api_key,
+      no_station_data, api_error); exceptions section in strings.json.
   icon-translations:
     status: done
   reconfiguration-flow:
-    status: todo
-    comment: Account API key is covered by reauth; add reconfigure (and consider
-      subentry reconfigure for re-running station discovery).
+    status: done
+    comment: Account-level reconfigure updates the API key. Station subentries
+      are intentionally not reconfigurable - a station IS its AQS code
+      (unique_id); changing station = remove + add.
   repair-issues:
     status: exempt
     comment: No repairable scenarios beyond reauth (which HA surfaces itself).
