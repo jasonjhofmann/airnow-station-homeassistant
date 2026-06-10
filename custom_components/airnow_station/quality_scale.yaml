@@ -1,0 +1,166 @@
+# Integration Quality Scale self-assessment (custom integration — not
+# officially scored; tracked against the core checklist, audited 2026-06-09).
+rules:
+  # Bronze
+  action-setup:
+    status: exempt
+    comment: No custom service actions.
+  appropriate-polling:
+    status: done
+    comment: 15-minute coordinator interval against hourly-published data.
+  brands:
+    status: todo
+    comment: Needs in-tree brand assets (custom_components/airnow_station/brand/);
+      central brands PRs auto-close for custom integrations.
+  common-modules:
+    status: todo
+    comment: coordinator.py exists; move AirNowStationEntity from sensor.py to entity.py.
+  config-flow:
+    status: done
+  config-flow-test-coverage:
+    status: todo
+    comment: User + subentry flows fully tested; reauth flow (async_step_reauth_confirm)
+      has no tests yet.
+  dependency-transparency:
+    status: done
+    comment: pyairnow, pinned, on PyPI, OSS.
+  docs-actions:
+    status: exempt
+    comment: No custom service actions.
+  docs-high-level-description:
+    status: done
+    comment: README "Why not the core AirNow integration" section.
+  docs-installation-instructions:
+    status: done
+    comment: README HACS custom-repository steps.
+  docs-removal-instructions:
+    status: todo
+  entity-event-setup:
+    status: exempt
+    comment: No event subscriptions.
+  entity-unique-id:
+    status: done
+    comment: "{aqs_code}-{description_key}."
+  has-entity-name:
+    status: done
+  runtime-data:
+    status: done
+    comment: entry.runtime_data holds the per-subentry coordinator map.
+  test-before-configure:
+    status: done
+    comment: API key validated by live discovery query in the flow.
+  test-before-setup:
+    status: done
+    comment: async_config_entry_first_refresh per station subentry.
+  unique-config-entry:
+    status: done
+    comment: _async_abort_entries_match on API key; subentry unique_id = AQS code.
+
+  # Silver
+  action-exceptions:
+    status: exempt
+    comment: No custom service actions.
+  config-entry-unloading:
+    status: done
+  docs-configuration-parameters:
+    status: todo
+    comment: No options flow; README should state that explicitly.
+  docs-installation-parameters:
+    status: todo
+    comment: README mentions key + coordinates; add an explicit parameter list.
+  entity-unavailable:
+    status: done
+    comment: Coordinator-driven plus per-parameter availability override.
+  integration-owner:
+    status: done
+  log-when-unavailable:
+    status: done
+    comment: DataUpdateCoordinator built-in once-per-transition logging.
+  parallel-updates:
+    status: done
+    comment: PARALLEL_UPDATES = 0 in sensor.py.
+  reauthentication-flow:
+    status: done
+  test-coverage:
+    status: todo
+    comment: Coordinator error paths, unload, and reauth untested; coverage
+      not yet measured against the 95% bar.
+
+  # Gold
+  devices:
+    status: done
+    comment: One service device per station subentry.
+  diagnostics:
+    status: todo
+    comment: Add diagnostics.py (redact API key; dump subentry data + latest rows).
+  discovery:
+    status: exempt
+    comment: Cloud service; stations are not locally discoverable.
+  discovery-update-info:
+    status: exempt
+    comment: No discovery.
+  docs-data-update:
+    status: done
+    comment: README documents hourly cadence, 15-minute polling, -999 sentinels.
+  docs-examples:
+    status: todo
+    comment: Add automation examples (e.g. ozone-threshold notification).
+  docs-known-limitations:
+    status: todo
+    comment: Consolidate (-999 sentinels, CO AQI gaps, station parameter variance,
+      AirNow rate limits) into one section.
+  docs-supported-devices:
+    status: todo
+    comment: State scope explicitly - any station reporting to AirNow /aq/data/.
+  docs-supported-functions:
+    status: done
+    comment: README entities table.
+  docs-troubleshooting:
+    status: todo
+  docs-use-cases:
+    status: done
+    comment: Covered by the why-section; revisit when examples land.
+  dynamic-devices:
+    status: exempt
+    comment: Stations are added intentionally via subentry flow, not auto-discovered.
+  entity-category:
+    status: done
+    comment: All entities are primary measurements; no config/diagnostic entities.
+  entity-device-class:
+    status: done
+    comment: Applied where HA units permit (PM2.5/PM10/CO/AQI); ozone/NO2/SO2
+      report ppb which the matching device classes reject.
+  entity-disabled-by-default:
+    status: done
+    comment: Small per-station entity set; nothing noisy enough to pre-disable.
+  entity-translations:
+    status: done
+  exception-translations:
+    status: todo
+    comment: Raise translation-keyed HomeAssistantError subclasses; add
+      exceptions section to strings.json.
+  icon-translations:
+    status: done
+  reconfiguration-flow:
+    status: todo
+    comment: Account API key is covered by reauth; add reconfigure (and consider
+      subentry reconfigure for re-running station discovery).
+  repair-issues:
+    status: exempt
+    comment: No repairable scenarios beyond reauth (which HA surfaces itself).
+  stale-devices:
+    status: done
+    comment: Devices exist only per explicit subentry; subentry removal cleans
+      up the device and entities via config_subentry_id binding.
+
+  # Platinum
+  async-dependency:
+    status: done
+    comment: pyairnow is asyncio/aiohttp.
+  inject-websession:
+    status: done
+    comment: Home Assistant clientsession injected into AirNowDataAPI.
+  strict-typing:
+    status: todo
+    comment: pyairnow ships py.typed; integration is typed but not yet verified
+      with mypy --strict.
