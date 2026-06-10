@@ -12,11 +12,14 @@ importable standalone (see ``scripts/smoke_test.py``) and PR-ready.
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable, Coroutine, Sequence
 from datetime import datetime
 from typing import Any
 
 from pyairnow.api import WebServiceAPI
+
+_LOGGER = logging.getLogger(__name__)
 
 # Identifiers accepted by the ``parameters`` query argument. Note the
 # request spelling (``PM25``) differs from the response spelling (``PM2.5``).
@@ -66,6 +69,7 @@ class Data:
             "verbose": str(int(verbose)),
             "includerawconcentrations": str(int(include_raw_concentrations)),
         }
+        _LOGGER.debug("GET aq/data/ params=%s", params)  # API key not in params
         return await self._request("aq/data/", params=params)
 
 

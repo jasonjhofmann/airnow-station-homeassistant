@@ -6,20 +6,14 @@ is a config subentry of type ``station`` (unique ID = full AQS code).
 
 from __future__ import annotations
 
-from datetime import timedelta
+import contextlib
 import logging
 import math
+from datetime import timedelta
 from typing import Any
 
-from aiohttp.client_exceptions import ClientConnectorError
-from pyairnow.errors import (
-    AirNowError,
-    EmptyResponseError,
-    InvalidJsonError,
-    InvalidKeyError,
-)
 import voluptuous as vol
-
+from aiohttp.client_exceptions import ClientConnectorError
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -38,6 +32,12 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
 )
 from homeassistant.util import dt as dt_util
+from pyairnow.errors import (
+    AirNowError,
+    EmptyResponseError,
+    InvalidJsonError,
+    InvalidKeyError,
+)
 
 from .api import AirNowDataAPI
 from .const import (
@@ -97,6 +97,14 @@ async def _async_discover_stations(
                 latitude, longitude, row["Latitude"], row["Longitude"]
             ),
         }
+    _LOGGER.debug(
+        "Discovery near %.4f,%.4f: %d stations from %d rows: %s",
+        latitude,
+        longitude,
+        len(stations),
+        len(rows),
+        {c: s[CONF_STATION_NAME] for c, s in stations.items()},
+    )
     return dict(sorted(stations.items(), key=lambda item: item[1]["distance"]))
 
 
@@ -105,12 +113,10 @@ async def _async_validate_key(hass: HomeAssistant, api_key: str) -> None:
 
     An empty result is fine — it proves the key was accepted.
     """
-    try:
+    with contextlib.suppress(EmptyResponseError):
         await _async_discover_stations(
             hass, api_key, hass.config.latitude, hass.config.longitude
         )
-    except EmptyResponseError:
-        pass
 
 
 class AirNowStationConfigFlow(ConfigFlow, domain=DOMAIN):

@@ -62,7 +62,11 @@ def draw_glyph(size: int) -> Image.Image:
     cx, cy, r = 256 * s, 170 * s, 86 * s
     d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=WHITE)
     d.polygon(
-        [(cx - r * 0.62, cy + r * 0.62), (cx + r * 0.62, cy + r * 0.62), (cx, cy + r * 1.9)],
+        [
+            (cx - r * 0.62, cy + r * 0.62),
+            (cx + r * 0.62, cy + r * 0.62),
+            (cx, cy + r * 1.9),
+        ],
         fill=WHITE,
     )
     d.ellipse(

@@ -9,9 +9,9 @@ Usage:
 """
 
 import asyncio
-from datetime import datetime, timedelta, timezone
 import os
 import sys
+from datetime import UTC, datetime, timedelta
 
 sys.path.insert(
     0,
@@ -31,7 +31,7 @@ async def main() -> None:
     lon = float(sys.argv[2]) if len(sys.argv) > 2 else -115.26
 
     client = AirNowDataAPI(api_key)
-    end = datetime.now(timezone.utc)
+    end = datetime.now(UTC)
     rows = await client.data.bbox(
         lon - 0.25,
         lat - 0.25,

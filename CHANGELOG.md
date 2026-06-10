@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.3.2 — 2026-06-09
+
+Observability & maintainability pass (no functional changes).
+
+- **Debug logging** throughout: poll window + row counts + latest
+  timestamp per parameter (coordinator), station discovery results
+  (config flow), per-account setup summary, and the raw query (API
+  client; the key never appears in logs). Enable via the integration
+  page or `logger:`.
+- **Diagnostics** now include update interval, update health, and the
+  last error per station.
+- **Field-level help text** (`data_description`) on every config-flow
+  input, including rate-limit guidance on the API key fields.
+- **CONTRIBUTING.md**: architecture tour, invariants, dev setup,
+  quality gates, release process.
+- README: entity-attributes table, debug-logging instructions.
+- **ruff** linting added and CI-enforced (alongside coverage + mypy).
+
 ## 0.3.1 — 2026-06-09
 
 Platinum quality-scale closure (no functional changes).

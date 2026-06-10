@@ -25,8 +25,15 @@ async def async_get_config_entry_diagnostics(
         "entry_data": async_redact_data(dict(entry.data), TO_REDACT),
         "stations": [
             {
+                "title": entry.subentries[subentry_id].title,
                 "subentry": dict(entry.subentries[subentry_id].data),
+                "update_interval": str(coordinator.update_interval),
                 "last_update_success": coordinator.last_update_success,
+                "last_exception": (
+                    str(coordinator.last_exception)
+                    if coordinator.last_exception
+                    else None
+                ),
                 "data": coordinator.data,
             }
             for subentry_id, coordinator in entry.runtime_data.items()

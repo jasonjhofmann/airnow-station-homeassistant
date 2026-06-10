@@ -2,24 +2,23 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
 import logging
+from datetime import timedelta
 from typing import Any
 
 from aiohttp.client_exceptions import ClientConnectorError
-from pyairnow.errors import (
-    AirNowError,
-    EmptyResponseError,
-    InvalidJsonError,
-    InvalidKeyError,
-)
-
 from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
+from pyairnow.errors import (
+    AirNowError,
+    EmptyResponseError,
+    InvalidJsonError,
+    InvalidKeyError,
+)
 
 from .api import AirNowDataAPI, latest_by_parameter
 from .const import (
@@ -73,6 +72,13 @@ class AirNowStationDataUpdateCoordinator(
         """Fetch the latest observation per parameter for the station."""
         end = dt_util.utcnow()
         start = end - timedelta(hours=LOOKBACK_HOURS)
+        _LOGGER.debug(
+            "Polling station %s (%s): window %s to %s",
+            self.station_name,
+            self.station_code,
+            start.isoformat(timespec="minutes"),
+            end.isoformat(timespec="minutes"),
+        )
 
         try:
             rows = await self.api.data.bbox(
@@ -102,8 +108,16 @@ class AirNowStationDataUpdateCoordinator(
                 translation_placeholders={"error": str(err)},
             ) from err
 
+        box_rows = len(rows)
         rows = [row for row in rows if row.get("FullAQSCode") == self.station_code]
         data = latest_by_parameter(rows)
+        _LOGGER.debug(
+            "Station %s: %d rows in box, %d for station, latest per parameter: %s",
+            self.station_code,
+            box_rows,
+            len(rows),
+            {param: row["UTC"] for param, row in data.items()},
+        )
         if not data:
             raise UpdateFailed(
                 translation_domain=DOMAIN,

@@ -5,18 +5,27 @@
         "description": "Get a free API key at {api_key_url}. After the account is added, add monitoring stations to it from the integration page.",
         "data": {
           "api_key": "API key"
+        },
+        "data_description": {
+          "api_key": "Your personal AirNow API key. The default key limit is 500 requests/hour; each configured station uses 4/hour."
         }
       },
       "reauth_confirm": {
         "description": "The AirNow API rejected your key. Get a new one at {api_key_url}.",
         "data": {
           "api_key": "API key"
+        },
+        "data_description": {
+          "api_key": "The replacement key is validated against the AirNow API before being saved."
         }
       },
       "reconfigure": {
         "description": "Update the AirNow API key used for all stations. Get a key at {api_key_url}.",
         "data": {
           "api_key": "API key"
+        },
+        "data_description": {
+          "api_key": "The new key is validated against the AirNow API before being saved. All stations on this account switch to it immediately."
         }
       }
     },
@@ -44,12 +53,19 @@
           "data": {
             "latitude": "Latitude",
             "longitude": "Longitude"
+          },
+          "data_description": {
+            "latitude": "Center of the station search. Stations that reported data within roughly 25 km in the last 3 hours will be listed.",
+            "longitude": "Defaults to your Home Assistant home location."
           }
         },
         "station": {
           "title": "Select station",
           "data": {
             "station": "Monitoring station"
+          },
+          "data_description": {
+            "station": "Sorted nearest-first. The station's measured parameters (ozone, PM, NO₂, …) determine which sensors are created."
           }
         }
       },

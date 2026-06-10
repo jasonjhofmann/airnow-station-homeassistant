@@ -7,3 +7,6 @@ target-version = "py313"
 
 [tool.mypy]
 strict = true
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "SIM", "UP"]

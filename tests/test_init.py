@@ -1,12 +1,9 @@
 """Tests for integration setup, unload, and coordinator failure modes."""
 
-from pyairnow.errors import AirNowError, EmptyResponseError, InvalidKeyError
 import pytest
-
-from homeassistant.config_entries import ConfigEntryState, ConfigSubentryData
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
-
-from custom_components.airnow_station.const import DOMAIN
+from pyairnow.errors import AirNowError, EmptyResponseError, InvalidKeyError
 
 from .conftest import OTHER_STATION, SAMPLE_ROWS, make_account_entry
 

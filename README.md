@@ -75,6 +75,16 @@ SO₂, CO):
 Data is hourly (polled every 15 minutes; AirNow publishes with some lag).
 AirNow's `-999` missing-value sentinels are filtered out.
 
+### Entity attributes
+
+| Entity | Attribute | Meaning |
+| --- | --- | --- |
+| Concentrations | `observed_utc` | UTC hour of the observation shown |
+| Concentrations | `raw_concentration` | Unvalidated instrument value (omitted while AirNow reports the `-999` placeholder) |
+| Air quality index | `dominant_pollutant` | Parameter responsible for the overall AQI |
+| Air quality index | `category` | EPA category name (Good … Hazardous) |
+| Air quality index | `observed_utc` | UTC hour of the dominant observation |
+
 ## Supported stations
 
 Any monitoring station that reports to AirNow's `/aq/data/` feed — in
@@ -147,7 +157,11 @@ template:
 - **Re-auth prompt appears** — the key was revoked or rate-limited;
   enter a valid key, or wait out the rate-limit window.
 - **Download diagnostics** (integration page → ⋮ → Download diagnostics)
-  to see exactly what the station last reported — the API key is redacted.
+  to see exactly what the station last reported, the update health, and the
+  last error — the API key is redacted.
+- **Enable debug logging** (integration page → ⋮ → Enable debug logging, or
+  `logger:` → `custom_components.airnow_station: debug`) to see each poll's
+  window, row counts, and the latest timestamp per parameter.
 
 ## Removal
 
@@ -165,10 +179,13 @@ exercises it standalone against the live API.
 
 ## Development
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) — architecture tour, dev setup,
+quality gates (pytest+coverage, mypy strict, ruff), and the release process.
+
 ```sh
 pip install -r requirements_test.txt
-pytest tests
-AIRNOW_API_KEY=... python3 scripts/smoke_test.py 36.002 -115.26
+pytest tests -q --cov=custom_components.airnow_station
+AIRNOW_API_KEY=... python3 scripts/smoke_test.py 36.1 -115.2
 ```
 
 ## Attribution

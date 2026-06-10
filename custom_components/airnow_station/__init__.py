@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from homeassistant.const import CONF_API_KEY, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -9,6 +11,8 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .api import AirNowDataAPI
 from .const import SUBENTRY_TYPE_STATION
 from .coordinator import AirNowAccountConfigEntry, AirNowStationDataUpdateCoordinator
+
+_LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
@@ -32,6 +36,11 @@ async def async_setup_entry(
         coordinators[subentry_id] = coordinator
 
     entry.runtime_data = coordinators
+    _LOGGER.debug(
+        "Account entry set up with %d station(s): %s",
+        len(coordinators),
+        [c.station_code for c in coordinators.values()],
+    )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

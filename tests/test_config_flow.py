@@ -1,12 +1,11 @@
 """Tests for the AirNow Station config and subentry flows."""
 
-from pyairnow.errors import AirNowError, EmptyResponseError, InvalidKeyError
 import pytest
-
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import CONF_API_KEY, CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+from pyairnow.errors import AirNowError, EmptyResponseError, InvalidKeyError
 
 from custom_components.airnow_station.const import (
     CONF_STATION_CODE,
