@@ -61,9 +61,7 @@ class Data:
             "startDate": start_date.strftime("%Y-%m-%dT%H"),
             "endDate": end_date.strftime("%Y-%m-%dT%H"),
             "parameters": ",".join(parameters),
-            "BBOX": (
-                f"{min_longitude},{min_latitude},{max_longitude},{max_latitude}"
-            ),
+            "BBOX": (f"{min_longitude},{min_latitude},{max_longitude},{max_latitude}"),
             "dataType": data_type,
             "monitorType": str(monitor_type),
             "verbose": str(int(verbose)),

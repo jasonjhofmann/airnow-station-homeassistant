@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+Tooling/CI only — no functional changes, no release.
+
+- ruff `target-version` lowered from `py314` to `py313`, the declared
+  support floor (HA 2025.6 → Python 3.13). Pinning to the newest
+  interpreter was a time-bomb: under `py314`, `ruff format` rewrites
+  `except (A, B):` into the unparenthesized PEP 758 form — 3.14-only
+  syntax that ships a `SyntaxError` to every HA on Python ≤ 3.13 (the
+  regression that shipped in visiblair 0.6.2). mypy is unaffected (no
+  pinned `python_version`; it checks against the installed HA source).
+- CI: lint (ruff check, `ruff format --check`, mypy) split into its own
+  3.14 job; pytest now runs a Python 3.13 + 3.14 matrix so the floor
+  interpreter is exercised on every push — 3.14-only syntax can no
+  longer slip through.
+- One-time `ruff format` normalization pass (whitespace/line-joining
+  only) now that formatting is CI-enforced.
+
 ## 0.3.4 — 2026-06-10
 
 - Brand images are now the official AirNow brand package (the same

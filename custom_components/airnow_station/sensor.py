@@ -101,9 +101,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up sensors for each station subentry's reported parameters."""
     for subentry_id, coordinator in config_entry.runtime_data.items():
-        entities: list[SensorEntity] = [
-            AirNowStationOverallAqiSensor(coordinator)
-        ]
+        entities: list[SensorEntity] = [AirNowStationOverallAqiSensor(coordinator)]
         for param in coordinator.data:
             if param not in CONCENTRATION_DESCRIPTIONS:
                 continue
@@ -189,9 +187,7 @@ class AirNowStationOverallAqiSensor(AirNowStationEntity):
         self._attr_unique_id = f"{coordinator.station_code}-aqi"
 
     def _dominant_row(self) -> tuple[str, dict[str, Any]] | None:
-        rows = [
-            item for item in self.coordinator.data.items() if item[1]["AQI"] >= 0
-        ]
+        rows = [item for item in self.coordinator.data.items() if item[1]["AQI"] >= 0]
         if not rows:
             return None
         return max(rows, key=lambda item: item[1]["AQI"])

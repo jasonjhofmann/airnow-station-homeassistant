@@ -43,9 +43,7 @@ async def main() -> None:
     )
     stations: dict[str, list] = {}
     for row in rows:
-        stations.setdefault(
-            f"{row['SiteName']} ({row['FullAQSCode']})", []
-        ).append(row)
+        stations.setdefault(f"{row['SiteName']} ({row['FullAQSCode']})", []).append(row)
 
     print(f"{len(rows)} rows from {len(stations)} stations:\n")
     for name, station_rows in sorted(stations.items()):

@@ -43,15 +43,11 @@ def draw_glyph(size: int) -> Image.Image:
     d = ImageDraw.Draw(img)
     s = size / 512  # design at 512
 
-    d.rounded_rectangle(
-        [16 * s, 16 * s, 496 * s, 496 * s], radius=96 * s, fill=BLUE
-    )
+    d.rounded_rectangle([16 * s, 16 * s, 496 * s, 496 * s], radius=96 * s, fill=BLUE)
 
     # Air waves: three horizontal arcs of decreasing width.
     wave_w = int(26 * s)
-    for i, (y, x0, x1) in enumerate(
-        [(330, 96, 416), (390, 128, 384), (450, 168, 344)]
-    ):
+    for i, (y, x0, x1) in enumerate([(330, 96, 416), (390, 128, 384), (450, 168, 344)]):
         d.line(
             [(x0 * s, y * s), (x1 * s, y * s)],
             fill=(255, 255, 255, 255 - i * 50),
@@ -69,9 +65,7 @@ def draw_glyph(size: int) -> Image.Image:
         ],
         fill=WHITE,
     )
-    d.ellipse(
-        [cx - r * 0.42, cy - r * 0.42, cx + r * 0.42, cy + r * 0.42], fill=SKY
-    )
+    d.ellipse([cx - r * 0.42, cy - r * 0.42, cx + r * 0.42, cy + r * 0.42], fill=SKY)
     return img
 
 

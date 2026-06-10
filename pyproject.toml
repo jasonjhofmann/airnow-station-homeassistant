@@ -3,7 +3,11 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 
 [tool.ruff]
-target-version = "py314"
+# Must match the OLDEST supported interpreter (HA 2025.6 floor -> Python 3.13),
+# not the newest: under py314, `ruff format` rewrites `except (A, B):` into the
+# unparenthesized 3.14-only PEP 758 form — the regression that shipped in
+# visiblair 0.6.2 as a SyntaxError on every HA running Python <= 3.13.
+target-version = "py313"
 
 [tool.mypy]
 strict = true

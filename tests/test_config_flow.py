@@ -156,9 +156,7 @@ async def test_station_subentry_errors(
     assert result["step_id"] == "station"
 
 
-async def test_duplicate_station_subentry_aborts(
-    hass: HomeAssistant, mock_api
-) -> None:
+async def test_duplicate_station_subentry_aborts(hass: HomeAssistant, mock_api) -> None:
     """Adding an already-configured station aborts."""
     entry = make_account_entry(subentries=True)
     entry.add_to_hass(hass)
@@ -208,9 +206,7 @@ async def test_reauth_flow(hass: HomeAssistant, mock_api) -> None:
     await hass.config_entries.async_unload(entry.entry_id)
 
 
-async def test_reauth_empty_response_is_valid(
-    hass: HomeAssistant, mock_api
-) -> None:
+async def test_reauth_empty_response_is_valid(hass: HomeAssistant, mock_api) -> None:
     """An empty discovery result during reauth still proves the key works."""
     entry = make_account_entry(subentries=True)
     entry.add_to_hass(hass)
