@@ -10,7 +10,13 @@ from homeassistant.core import HomeAssistant
 
 from .coordinator import AirNowAccountConfigEntry
 
-TO_REDACT = {CONF_API_KEY}
+# Keys redacted at any depth. Station latitude/longitude and AQS codes are
+# deliberately NOT redacted: they are public EPA monitor metadata, and the
+# dump never contains the user's own coordinates (search input is not
+# stored). "API_KEY" is the raw AirNow query-parameter casing — never in
+# today's dump, but pre-listed so request params/URLs attached by a future
+# revision would scrub automatically. Unused keys cost nothing.
+TO_REDACT = {CONF_API_KEY, "API_KEY"}
 
 
 async def async_get_config_entry_diagnostics(

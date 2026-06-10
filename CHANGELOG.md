@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.3 — 2026-06-10
+
+- Diagnostics redact set pre-lists the raw AirNow query-parameter casing
+  (`API_KEY`) so request context attached by a future revision would
+  scrub automatically; the deliberate non-redaction of public station
+  metadata (coordinates, AQS codes) is now documented and tested.
+
 ## 0.3.2 — 2026-06-09
 
 Observability & maintainability pass (no functional changes).
