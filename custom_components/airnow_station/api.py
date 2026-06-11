@@ -90,14 +90,22 @@ class AirNowDataAPI(WebServiceAPI):
 def latest_by_parameter(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     """Reduce raw data rows to the most recent valid row per parameter.
 
-    Rows whose ``Value`` is the -999 sentinel are ignored. ``UTC`` strings
-    are fixed-width ISO timestamps, so lexicographic comparison is safe.
+    Rows whose ``Value`` is missing, ``null``, or the -999 sentinel are
+    ignored (a JSON ``null`` would otherwise slip past the sentinel check
+    and crash ``float(row["Value"])`` downstream). A missing or ``null``
+    ``AQI`` is normalized to the sentinel so consumers can rely on the key
+    and treat it exactly like the API's "no AQI computed" rows. ``UTC``
+    strings are fixed-width ISO timestamps, so lexicographic comparison
+    is safe.
     """
     latest: dict[str, dict[str, Any]] = {}
     for row in rows:
-        if row.get("Value", MISSING_VALUE) == MISSING_VALUE:
+        value = row.get("Value")
+        if value is None or value == MISSING_VALUE:
             continue
         param = row["Parameter"]
         if param not in latest or row["UTC"] > latest[param]["UTC"]:
+            if row.get("AQI") is None:
+                row = {**row, "AQI": MISSING_VALUE}
             latest[param] = row
     return latest

@@ -164,6 +164,7 @@ def make_account_entry(
     subentries: bool = True,
     foreign_subentry: bool = False,
     extra_subentries: list[ConfigSubentryData] | None = None,
+    api_key: str = "test-key",
 ) -> MockConfigEntry:
     """Build an account MockConfigEntry, optionally with Mountains Edge."""
     subentries_data = [MOUNTAINS_EDGE_SUBENTRY] if subentries else []
@@ -180,6 +181,6 @@ def make_account_entry(
     return MockConfigEntry(
         domain=DOMAIN,
         title="AirNow",
-        data={CONF_API_KEY: "test-key"},
+        data={CONF_API_KEY: api_key},
         subentries_data=subentries_data,
     )

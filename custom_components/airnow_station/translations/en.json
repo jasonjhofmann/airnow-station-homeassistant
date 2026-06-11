@@ -76,7 +76,7 @@
         "unknown": "Unexpected error"
       },
       "abort": {
-        "already_configured": "This station is already configured"
+        "already_configured": "This station is already configured (on this or another AirNow account entry)"
       }
     }
   },

@@ -81,6 +81,8 @@ async def async_setup_entry(
         )
 
     # Reload on changes so newly added station subentries get set up.
+    # This listener is also the single reload path for reauth/reconfigure
+    # key changes while the entry is loaded (see config_flow).
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
     return True
 
@@ -112,7 +114,7 @@ def _make_recovery_listener(
 async def _async_update_listener(
     hass: HomeAssistant, entry: AirNowAccountConfigEntry
 ) -> None:
-    """Handle config entry updates (e.g. a subentry was added/removed)."""
+    """Handle config entry updates (subentry added/removed, key changed)."""
     await hass.config_entries.async_reload(entry.entry_id)
 
 

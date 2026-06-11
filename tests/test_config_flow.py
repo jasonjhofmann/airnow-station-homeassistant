@@ -177,6 +177,34 @@ async def test_duplicate_station_subentry_aborts(hass: HomeAssistant, mock_api) 
     assert len(entry.subentries) == 1
 
 
+async def test_duplicate_station_across_accounts_aborts(
+    hass: HomeAssistant, mock_api
+) -> None:
+    """A station configured under one account entry is rejected on another.
+
+    Entity/device unique IDs derive from the AQS code alone, so the same
+    station under two account entries would collide in the registries.
+    """
+    make_account_entry(subentries=True).add_to_hass(hass)
+    second = make_account_entry(subentries=False, api_key="other-key")
+    second.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(second.entry_id)
+    await hass.async_block_till_done()
+
+    result = await hass.config_entries.subentries.async_init(
+        (second.entry_id, SUBENTRY_TYPE_STATION), context={"source": SOURCE_USER}
+    )
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], SEARCH_INPUT
+    )
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"], {"station": "320030044"}
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "already_configured"
+    assert len(second.subentries) == 0
+
+
 async def test_reauth_flow(hass: HomeAssistant, mock_api) -> None:
     """Reauth rejects a bad key, then accepts a good one."""
     entry = make_account_entry(subentries=True)

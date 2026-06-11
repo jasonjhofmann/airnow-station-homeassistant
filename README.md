@@ -40,7 +40,7 @@ added to that account as subentries: open the AirNow Station card and choose
 **Add monitoring station**, enter coordinates, and every station that
 reported data within ~25 km in the last 3 hours is listed with its
 distance — pick one. Repeat for as many stations as you like; duplicates
-are rejected by AQS code.
+are rejected by AQS code, across all account entries.
 
 ### Parameters
 
