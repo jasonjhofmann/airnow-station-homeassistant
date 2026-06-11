@@ -158,8 +158,9 @@ class AirNowStationConcentrationSensor(AirNowStationParameterSensor):
         if (row := self.coordinator.data.get(self.param)) is None:
             return None
         attrs: dict[str, Any] = {ATTR_OBSERVED_UTC: row["UTC"]}
-        raw = row.get("RawConcentration", MISSING_VALUE)
-        if raw != MISSING_VALUE:
+        # Missing key and JSON null are omitted exactly like the -999 sentinel.
+        raw = row.get("RawConcentration")
+        if raw is not None and raw != MISSING_VALUE:
             attrs[ATTR_RAW_CONCENTRATION] = raw
         return attrs
 

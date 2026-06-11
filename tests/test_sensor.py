@@ -195,6 +195,63 @@ async def test_null_value_row_falls_back_to_prior_hour(
     assert pm25.attributes["observed_utc"] == "2026-06-09T19:00"
 
 
+async def test_null_or_missing_raw_concentration_omitted(
+    hass: HomeAssistant, mock_api
+) -> None:
+    """Null or absent RawConcentration is omitted like the -999 sentinel."""
+    from .conftest import MOUNTAINS_EDGE
+
+    mock_api.data.bbox.return_value = [
+        {
+            **MOUNTAINS_EDGE,
+            "UTC": "2026-06-09T19:00",
+            "Parameter": "PM2.5",
+            "Unit": "UG/M3",
+            "Value": 3.3,
+            "RawConcentration": None,
+            "AQI": 18,
+            "Category": 1,
+        },
+        {
+            **MOUNTAINS_EDGE,
+            "UTC": "2026-06-09T19:00",
+            "Parameter": "OZONE",
+            "Unit": "PPB",
+            "Value": 49.0,
+            "AQI": 45,
+            "Category": 1,
+        },
+        {
+            **MOUNTAINS_EDGE,
+            "UTC": "2026-06-09T19:00",
+            "Parameter": "PM10",
+            "Unit": "UG/M3",
+            "Value": 18.0,
+            "RawConcentration": 17.0,
+            "AQI": 16,
+            "Category": 1,
+        },
+    ]
+    entry = make_account_entry(subentries=True)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    # JSON null -> attribute absent, value unaffected.
+    pm25 = state_by_unique_id(hass, "320030044-pm25")
+    assert pm25.state == "3.3"
+    assert "raw_concentration" not in pm25.attributes
+
+    # Key missing entirely -> attribute absent, value unaffected.
+    ozone = state_by_unique_id(hass, "320030044-ozone")
+    assert ozone.state == "49.0"
+    assert "raw_concentration" not in ozone.attributes
+
+    # A valid raw concentration is still exposed.
+    pm10 = state_by_unique_id(hass, "320030044-pm10")
+    assert pm10.attributes["raw_concentration"] == 17.0
+
+
 async def test_missing_aqi_key_reports_concentration_only(
     hass: HomeAssistant, mock_api
 ) -> None:
