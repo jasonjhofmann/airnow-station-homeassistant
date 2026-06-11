@@ -94,13 +94,30 @@ def test_airnow_data_api_wires_data_endpoint() -> None:
 
 
 def test_latest_by_parameter_edge_cases() -> None:
-    """Sentinels and rows without Value are skipped; latest wins."""
+    """Sentinel/null/missing Values are skipped; latest wins."""
     rows = [
-        {"Parameter": "OZONE", "UTC": "2026-06-09T18:00", "Value": 50.0},
-        {"Parameter": "OZONE", "UTC": "2026-06-09T19:00", "Value": 49.0},
-        {"Parameter": "OZONE", "UTC": "2026-06-09T20:00", "Value": -999.0},
+        {"Parameter": "OZONE", "UTC": "2026-06-09T18:00", "Value": 50.0, "AQI": 46},
+        {"Parameter": "OZONE", "UTC": "2026-06-09T19:00", "Value": 49.0, "AQI": 45},
+        {"Parameter": "OZONE", "UTC": "2026-06-09T20:00", "Value": -999.0, "AQI": -999},
         {"Parameter": "PM2.5", "UTC": "2026-06-09T19:00"},  # no Value key
+        # JSON null Value must be skipped, not crash float() downstream.
+        {"Parameter": "PM10", "UTC": "2026-06-09T20:00", "Value": None, "AQI": None},
+        {"Parameter": "PM10", "UTC": "2026-06-09T19:00", "Value": 18.0, "AQI": 17},
     ]
     latest = latest_by_parameter(rows)
-    assert set(latest) == {"OZONE"}
+    assert set(latest) == {"OZONE", "PM10"}
     assert latest["OZONE"]["UTC"] == "2026-06-09T19:00"
+    assert latest["PM10"]["UTC"] == "2026-06-09T19:00"
+
+
+def test_latest_by_parameter_normalizes_missing_aqi() -> None:
+    """Rows lacking AQI (or with null AQI) get the -999 sentinel."""
+    rows = [
+        {"Parameter": "CO", "UTC": "2026-06-09T19:00", "Value": 0.1},
+        {"Parameter": "OZONE", "UTC": "2026-06-09T19:00", "Value": 49.0, "AQI": None},
+        {"Parameter": "PM2.5", "UTC": "2026-06-09T19:00", "Value": 3.3, "AQI": 18},
+    ]
+    latest = latest_by_parameter(rows)
+    assert latest["CO"]["AQI"] == -999.0
+    assert latest["OZONE"]["AQI"] == -999.0
+    assert latest["PM2.5"]["AQI"] == 18

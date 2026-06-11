@@ -15,7 +15,9 @@ from typing import Any
 import voluptuous as vol
 from aiohttp.client_exceptions import ClientConnectorError
 from homeassistant.config_entries import (
+    SOURCE_RECONFIGURE,
     ConfigEntry,
+    ConfigEntryState,
     ConfigFlow,
     ConfigFlowResult,
     ConfigSubentryFlow,
@@ -175,9 +177,8 @@ class AirNowStationConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
 
             if not errors:
-                return self.async_update_reload_and_abort(
-                    self._get_reauth_entry(),
-                    data_updates={CONF_API_KEY: api_key},
+                return self._async_update_key_and_abort(
+                    self._get_reauth_entry(), api_key
                 )
 
         return self.async_show_form(
@@ -205,9 +206,8 @@ class AirNowStationConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
 
             if not errors:
-                return self.async_update_reload_and_abort(
-                    self._get_reconfigure_entry(),
-                    data_updates={CONF_API_KEY: api_key},
+                return self._async_update_key_and_abort(
+                    self._get_reconfigure_entry(), api_key
                 )
 
         return self.async_show_form(
@@ -216,6 +216,32 @@ class AirNowStationConfigFlow(ConfigFlow, domain=DOMAIN):
             description_placeholders={"api_key_url": _API_KEY_URL},
             errors=errors,
         )
+
+    @callback
+    def _async_update_key_and_abort(
+        self, entry: ConfigEntry, api_key: str
+    ) -> ConfigFlowResult:
+        """Save the validated key and reload the entry exactly once.
+
+        The entry's update listener (registered while it is loaded, and
+        needed for subentry add/remove) already reloads on the data
+        change, so the flow must not schedule its own reload on top of
+        it — ``async_update_reload_and_abort`` did, doubling every
+        setup (2 × N station API calls per key change), and HA 2026.6
+        deprecates that combination outright (breaks in 2026.12). The
+        flow schedules the reload directly only when the listener
+        cannot fire: the entry is not loaded (reauth after a failed
+        setup) or the key is unchanged.
+        """
+        changed = self.hass.config_entries.async_update_entry(
+            entry, data={**entry.data, CONF_API_KEY: api_key}
+        )
+        if not (changed and entry.state is ConfigEntryState.LOADED):
+            self.hass.config_entries.async_schedule_reload(entry.entry_id)
+        reason = "reauth_successful"
+        if self.source == SOURCE_RECONFIGURE:
+            reason = "reconfigure_successful"
+        return self.async_abort(reason=reason)
 
     @classmethod
     @callback
@@ -278,12 +304,29 @@ class StationSubentryFlowHandler(ConfigSubentryFlow):
             errors=errors,
         )
 
+    def _async_station_already_configured(self, code: str) -> bool:
+        """Check every account entry for a subentry with this AQS code.
+
+        Subentry unique IDs are only unique within their parent entry,
+        but entity and device unique IDs derive from the AQS code alone,
+        so the same station under two account entries (two API keys)
+        would collide in the registries. Reject the duplicate here.
+        """
+        return any(
+            subentry.subentry_type == SUBENTRY_TYPE_STATION
+            and subentry.unique_id == code
+            for entry in self.hass.config_entries.async_entries(DOMAIN)
+            for subentry in entry.subentries.values()
+        )
+
     async def async_step_station(
         self, user_input: dict[str, Any] | None = None
     ) -> SubentryFlowResult:
         """Let the user pick one of the discovered stations."""
         if user_input is not None:
             station = self._stations[user_input[CONF_STATION]]
+            if self._async_station_already_configured(station[CONF_STATION_CODE]):
+                return self.async_abort(reason="already_configured")
             return self.async_create_entry(
                 title=station[CONF_STATION_NAME],
                 data={

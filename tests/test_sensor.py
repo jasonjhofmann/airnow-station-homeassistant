@@ -157,6 +157,70 @@ async def test_overall_aqi_unknown_when_no_valid_aqi(
     assert "dominant_pollutant" not in overall.attributes
 
 
+async def test_null_value_row_falls_back_to_prior_hour(
+    hass: HomeAssistant, mock_api
+) -> None:
+    """A JSON null Value is skipped like the -999 sentinel, not crashed on."""
+    from .conftest import MOUNTAINS_EDGE
+
+    mock_api.data.bbox.return_value = [
+        {
+            **MOUNTAINS_EDGE,
+            "UTC": "2026-06-09T19:00",
+            "Parameter": "PM2.5",
+            "Unit": "UG/M3",
+            "Value": 3.3,
+            "RawConcentration": 3.2,
+            "AQI": 18,
+            "Category": 1,
+        },
+        {
+            **MOUNTAINS_EDGE,
+            "UTC": "2026-06-09T20:00",
+            "Parameter": "PM2.5",
+            "Unit": "UG/M3",
+            "Value": None,
+            "RawConcentration": None,
+            "AQI": None,
+            "Category": None,
+        },
+    ]
+    entry = make_account_entry(subentries=True)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    pm25 = state_by_unique_id(hass, "320030044-pm25")
+    assert pm25.state == "3.3"
+    assert pm25.attributes["observed_utc"] == "2026-06-09T19:00"
+
+
+async def test_missing_aqi_key_reports_concentration_only(
+    hass: HomeAssistant, mock_api
+) -> None:
+    """A row without an AQI key still reports its concentration."""
+    from .conftest import MOUNTAINS_EDGE
+
+    mock_api.data.bbox.return_value = [
+        {
+            **MOUNTAINS_EDGE,
+            "UTC": "2026-06-09T19:00",
+            "Parameter": "CO",
+            "Unit": "PPM",
+            "Value": 0.1,
+            "RawConcentration": 0.1,
+        }
+    ]
+    entry = make_account_entry(subentries=True)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert state_by_unique_id(hass, "320030044-co").state == "0.1"
+    assert state_by_unique_id(hass, "320030044-co_aqi").state == "unknown"
+    assert state_by_unique_id(hass, "320030044-aqi").state == "unknown"
+
+
 def test_concentration_attrs_none_when_param_missing(mock_api) -> None:
     """Attribute property guards against a parameter vanishing mid-query."""
     from unittest.mock import MagicMock

@@ -27,7 +27,7 @@ async def main() -> None:
     api_key = os.environ.get("AIRNOW_API_KEY")
     if not api_key:
         sys.exit("Set AIRNOW_API_KEY")
-    lat = float(sys.argv[1]) if len(sys.argv) > 2 else 36.002
+    lat = float(sys.argv[1]) if len(sys.argv) > 1 else 36.002
     lon = float(sys.argv[2]) if len(sys.argv) > 2 else -115.26
 
     client = AirNowDataAPI(api_key)

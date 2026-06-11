@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.3.6 — 2026-06-10
+
+Adjacent-issue sweep: registry-collision prevention, reload dedup, and
+parsing hardening.
+
+- **Duplicate stations across account entries are now rejected.** A
+  station's subentry unique ID is only unique within its parent account
+  entry, but entity and device unique IDs derive from the AQS code
+  alone — so adding the same station under a second account entry
+  (a second API key) collided in the entity/device registries. The
+  station-picker step now checks every account entry of the domain and
+  aborts with `already_configured` (message updated to say the station
+  may live on another account entry). The unique-ID format is
+  deliberately unchanged: rewriting it would orphan every existing
+  entity.
+- **Key changes via reauth/reconfigure no longer reload the entry
+  twice.** `async_update_reload_and_abort` scheduled a reload while the
+  entry's update listener (needed so subentry add/remove triggers a
+  reload) fired on the same data update and scheduled a second — two
+  full setups, 2 × N station API calls per key change. HA 2026.6 also
+  deprecates that flow-helper/listener combination outright (logged,
+  breaks in 2026.12). The flows now just update the entry data and let
+  the update listener own the reload; they schedule it directly only
+  when the listener cannot fire — the entry is not loaded (reauth after
+  a failed setup) or the key is unchanged. Exactly one reload in every
+  path, verified by setup-counting tests for reauth (loaded and failed
+  entries) and subentry add/remove.
+- **Row-parsing hardening.** A JSON `null` `Value` slipped past the
+  -999 sentinel filter and crashed `float(row["Value"])` in the
+  concentration sensor; a row omitting the `AQI` key was a hard
+  `KeyError` in the AQI sensors. `latest_by_parameter()` now skips rows
+  with missing/null `Value` (falling back to the prior hour exactly
+  like the sentinel) and normalizes a missing or null `AQI` to the
+  sentinel, so AQI sensors report unknown while the concentration still
+  reports.
+- `scripts/smoke_test.py`: the `lat` argument guard was off by one
+  (`len(sys.argv) > 2`), so passing only a latitude silently used the
+  default coordinates. Dev script only.
+
 ## 0.3.5 — 2026-06-10
 
 Resilience release: one station's outage no longer takes down the whole
