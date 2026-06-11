@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.7 — 2026-06-10
+
+- **Null/missing `RawConcentration` no longer leaks a `None` attribute.**
+  A row with a valid `Value` but a JSON `null` (or absent)
+  `RawConcentration` exposed `raw_concentration: None` on the
+  concentration sensor, while the API's -999 sentinel already omitted
+  the attribute. Null and missing are now treated exactly like the
+  sentinel at the attribute layer: the attribute is omitted. Cosmetic
+  hardening only — no crash involved, valid raw concentrations
+  unaffected.
+
 ## 0.3.6 — 2026-06-10
 
 Adjacent-issue sweep: registry-collision prevention, reload dedup, and
