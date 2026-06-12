@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.8 — 2026-06-11
+
+- **HACS validation now runs without `ignore: brands`.** The escape
+  hatch was vestigial — brand assets have shipped in-package at
+  `custom_components/airnow_station/brand/` since 0.3.4 and satisfy
+  the check directly. Removing it is a prerequisite for the
+  hacs/default registry submission, whose checklist requires a green
+  HACS action without the `ignore` key. No functional changes.
+
 ## 0.3.7 — 2026-06-10
 
 - **Null/missing `RawConcentration` no longer leaks a `None` attribute.**
