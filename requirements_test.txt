@@ -1,5 +1,5 @@
 mypy
-pyairnow==1.4.0
+pyairnow==1.4.1
 pytest-cov
 pytest-homeassistant-custom-component
 ruff
