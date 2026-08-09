@@ -33,7 +33,7 @@ ATTR_CATEGORY = "category"
 
 # Concentration sensors, keyed by the *response* parameter name. Ozone, NO2,
 # and SO2 are reported in ppb, which the matching HA device classes do not
-# accept (they require µg/m³), so those go without a device class.
+# accept (they require μg/m³), so those go without a device class.
 CONCENTRATION_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
     "PM2.5": SensorEntityDescription(
         key="pm25",
