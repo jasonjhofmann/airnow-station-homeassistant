@@ -37,10 +37,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # 3.13 = the declared support floor (HA 2025.6 -> Python 3.13). The
-        # floor leg catches 3.14-only syntax before it ships (see pyproject's
-        # ruff target-version note).
-        python-version: ["3.13", "3.14"]
+        # 3.14 = the declared support floor: the hacs.json floor is HA 2026.7,
+        # which declares requires-python >= 3.14.2. A 3.13 leg would resolve a
+        # pre-2026.7 HomeAssistant that has no UnitOfDensity/UnitOfRatio and
+        # could only ever fail on import, so the floor and the ceiling are the
+        # same interpreter for now. Kept as a matrix so a second leg can be
+        # added when HA next raises its Python floor.
+        python-version: ["3.14"]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7

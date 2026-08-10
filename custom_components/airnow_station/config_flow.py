@@ -138,7 +138,7 @@ class AirNowStationConfigFlow(ConfigFlow, domain=DOMAIN):
                 await _async_validate_key(self.hass, api_key)
             except InvalidKeyError:
                 errors["base"] = "invalid_auth"
-            except (TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError):
+            except TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError:
                 errors["base"] = "cannot_connect"
             except Exception:
                 _LOGGER.exception("Unexpected exception")
@@ -170,7 +170,7 @@ class AirNowStationConfigFlow(ConfigFlow, domain=DOMAIN):
                 await _async_validate_key(self.hass, api_key)
             except InvalidKeyError:
                 errors["base"] = "invalid_auth"
-            except (TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError):
+            except TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError:
                 errors["base"] = "cannot_connect"
             except Exception:
                 _LOGGER.exception("Unexpected exception")
@@ -199,7 +199,7 @@ class AirNowStationConfigFlow(ConfigFlow, domain=DOMAIN):
                 await _async_validate_key(self.hass, api_key)
             except InvalidKeyError:
                 errors["base"] = "invalid_auth"
-            except (TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError):
+            except TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError:
                 errors["base"] = "cannot_connect"
             except Exception:
                 _LOGGER.exception("Unexpected exception")
@@ -278,7 +278,7 @@ class StationSubentryFlowHandler(ConfigSubentryFlow):
                 errors["base"] = "invalid_auth"
             except EmptyResponseError:
                 errors["base"] = "no_stations"
-            except (TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError):
+            except TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError:
                 errors["base"] = "cannot_connect"
             except Exception:
                 _LOGGER.exception("Unexpected exception")

@@ -1,6 +1,6 @@
 """Tests for AirNow Station sensors."""
 
-from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+from homeassistant.const import UnitOfDensity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
@@ -34,7 +34,7 @@ async def test_sensors(hass: HomeAssistant, mock_api) -> None:
     assert pm25.state == "3.3"
     assert (
         pm25.attributes["unit_of_measurement"]
-        == CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+        == UnitOfDensity.MICROGRAMS_PER_CUBIC_METER
     )
 
     # -999 raw concentration is not exposed as an attribute.
