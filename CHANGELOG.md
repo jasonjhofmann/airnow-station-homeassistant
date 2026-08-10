@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.9 — 2026-08-09
+
+- **Docs and comments use Home Assistant's canonical micro sign (U+03BC).**
+  The README pollutant table and the device-class comment in `sensor.py`
+  spelled `μg/m³` with U+00B5 MICRO SIGN, while Home Assistant's own
+  constant has always been U+03BC GREEK SMALL LETTER MU. Text only — the
+  entities were always correct, since `sensor.py` takes the unit from HA's
+  constant rather than a literal. The comment in question is specifically
+  about which device classes require that unit, which makes it the line
+  most likely to be copied into code. No functional changes.
+
 ## 0.3.8 — 2026-06-11
 
 - **HACS validation now runs without `ignore: brands`.** The escape
