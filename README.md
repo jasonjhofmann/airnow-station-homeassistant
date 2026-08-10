@@ -24,6 +24,9 @@ concentrations** plus per-pollutant **AQI**.
 
 ## Installation
 
+**Requires Home Assistant 2026.7.0 or newer** (which runs on Python 3.14).
+HACS enforces this floor and will not offer the install on older cores.
+
 Until this repo is in the HACS default store, add it as a custom repository:
 
 1. HACS → ⋮ → *Custom repositories* → add

@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.4.0 — 2026-08-09
+
+- **Deprecated `CONCENTRATION_*` constants replaced by `UnitOfDensity` /
+  `UnitOfRatio`.** Home Assistant deprecated all six `CONCENTRATION_*`
+  constants (core PR #175189, merged 2026-06-30), with removal scheduled
+  for **HA Core 2027.8**. `sensor.py` now uses
+  `UnitOfDensity.MICROGRAMS_PER_CUBIC_METER` (PM2.5, PM10),
+  `UnitOfRatio.PARTS_PER_BILLION` (ozone, NO2, SO2), and
+  `UnitOfRatio.PARTS_PER_MILLION` (CO). The enum members carry
+  byte-identical values (`μg/m³`, `ppb`, `ppm`), so **no unit string and
+  no runtime behavior changes** — existing entities keep their states,
+  statistics, and history exactly as they are. The swap only silences the
+  startup deprecation warning and future-proofs against the 2027.8
+  removal.
+- **Breaking (user-facing): the minimum Home Assistant version rises from
+  2025.6.0 to 2026.7.0** — and with it the minimum **Python, to 3.14**,
+  because HA 2026.7 declares `requires-python >= 3.14.2`. `UnitOfDensity`
+  and `UnitOfRatio` do not exist in `homeassistant.const` before 2026.7.0
+  (they are absent at 2026.6.0), so this release cannot load on an older
+  core. `hacs.json` now declares `"homeassistant": "2026.7.0"` and HACS
+  will not offer the install below that.
+- Floor-coupled tooling reconciled with the new floor: ruff
+  `target-version` raised `py313` → `py314` (it must equal the *oldest*
+  supported interpreter, which is now 3.14), and the pytest CI matrix
+  drops its 3.13 leg — on 3.13 the resolver picks a pre-2026.7
+  HomeAssistant that lacks the new enums, so that leg could only ever
+  fail on import. The lint job was already on 3.14. Raising the ruff
+  target let `ruff format` rewrite the four
+  `except (TimeoutError, AirNowError, InvalidJsonError, ClientConnectorError):`
+  clauses in `config_flow.py` into the unparenthesized PEP 758 form —
+  3.14-only syntax that is legal here now that 3.13 is out of support,
+  and the exact inverse of the 0.3.5 change below. `coordinator.py`'s
+  `except (...) as err` is untouched: PEP 758 forbids dropping the
+  parentheses when `as` is used.
+- Docs: the README states the 2026.7.0 / Python 3.14 requirement up
+  front.
+
 ## 0.3.9 — 2026-08-09
 
 - **Docs and comments use Home Assistant's canonical micro sign (U+03BC).**
