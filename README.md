@@ -70,7 +70,7 @@ SO₂, CO):
 | Entity | Unit | Notes |
 | --- | --- | --- |
 | Air quality index | AQI | Max across pollutants; attributes: dominant pollutant, category, observation time |
-| `<pollutant>` | µg/m³ / ppb / ppm | Measured concentration; attributes: observation time, raw concentration |
+| `<pollutant>` | μg/m³ / ppb / ppm | Measured concentration; attributes: observation time, raw concentration |
 | `<pollutant>` AQI | AQI | Per-pollutant AQI |
 
 Data is hourly (polled every 15 minutes; AirNow publishes with some lag).
@@ -136,7 +136,7 @@ template:
   frequently returns `-999` for its AQI at ambient levels — the CO AQI
   sensor then reads `unknown`. This is upstream behavior.
 - **ppb pollutants carry no device class.** Home Assistant's ozone/NO₂/SO₂
-  device classes require µg/m³; AirNow reports ppb, so those sensors have
+  device classes require μg/m³; AirNow reports ppb, so those sensors have
   units but no device class.
 - **Parameter sets can change.** If a station starts reporting a new
   pollutant, reload the integration (or restart) to create its sensors.
