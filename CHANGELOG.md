@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.1 — 2026-08-23
+
+- **`hacs.json` now declares `"country": "US"`.** AirNow is a US EPA
+  service and its monitoring stations are US-only, so the HACS catalog
+  entry is now scoped to US users instead of surfacing everywhere.
+  Requested by the HACS reviewer on the catalog submission
+  (hacs/default#8407). No code changes.
+
 ## 0.4.0 — 2026-08-09
 
 - **Deprecated `CONCENTRATION_*` constants replaced by `UnitOfDensity` /
