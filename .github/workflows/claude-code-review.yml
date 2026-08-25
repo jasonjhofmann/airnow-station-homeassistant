@@ -10,13 +10,22 @@ on:
     #   - "src/**/*.js"
     #   - "src/**/*.jsx"
 
+# Re-reviewing on every push to a PR is the single largest avoidable Claude
+# spend in this repo; keep only the newest run per PR.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
+    # Fork PRs get no secrets under `pull_request`, so CLAUDE_CODE_OAUTH_TOKEN
+    # would be empty and the job would fail with a confusing error on every
+    # drive-by PR to this PUBLIC repo. Skip cleanly instead, and keep review
+    # spend to branches in this repository (plus Dependabot, which is why
+    # allowed_bots is set below). Note this is failure-noise control, not a
+    # quota control: the action itself already refuses non-write actors.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
 
     runs-on: ubuntu-latest
     permissions:
