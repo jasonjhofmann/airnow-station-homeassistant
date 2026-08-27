@@ -7,6 +7,10 @@ custom_components/airnow_station/
   api.py           /aq/data/ client in pyairnow house style. NO Home Assistant
                    imports — it is intended for an eventual upstream PR to
                    pyairnow and is testable standalone (see scripts/smoke_test.py).
+                   Owns its request layer (mirroring WebServiceAPI._get) and
+                   imports only pyairnow's PUBLIC error classes, so the
+                   manifest can declare a pyairnow version floor, not an
+                   exact pin. CI tests the floor and the latest release.
   config_flow.py   Account flow (API key) + station subentry flow (coordinate
                    search → pick from discovered stations) + reauth + reconfigure.
   coordinator.py   One DataUpdateCoordinator per station subentry. Polls a tight

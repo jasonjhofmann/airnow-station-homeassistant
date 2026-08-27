@@ -181,8 +181,13 @@ template:
 The `/aq/data/` client (`api.py`) is deliberately written in
 [pyairnow](https://github.com/asymworks/pyairnow)'s house style, with no
 Home Assistant imports, so it can be PRed upstream as `pyairnow.data`; a
-station mode for the core integration could follow. `scripts/smoke_test.py`
-exercises it standalone against the live API.
+station mode for the core integration could follow. Its `Data` class takes
+any request callable — locally that's `AirNowDataAPI`'s own request layer
+(only pyairnow's public error classes are imported, so any
+`pyairnow>=1.3.1` satisfies the manifest and there is no exact-pin fight
+with HA core's `airnow` integration over the shared package); upstream it
+would be wired to `WebServiceAPI._get`. `scripts/smoke_test.py` exercises
+it standalone against the live API.
 
 ## Development
 

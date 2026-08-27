@@ -44,10 +44,35 @@ jobs:
         # same interpreter for now. Kept as a matrix so a second leg can be
         # added when HA next raises its Python floor.
         python-version: ["3.14"]
+        # requirements_test.txt pins the latest pyairnow (Dependabot keeps it
+        # current). The manifest declares a version *floor* (pyairnow>=1.3.1),
+        # so both ends of that range must stay proven: the "floor" leg
+        # reinstalls the oldest version the manifest admits — read from
+        # manifest.json itself, so this leg cannot drift from what users may
+        # actually resolve.
+        pyairnow: ["floor", "latest"]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -r requirements_test.txt
+      - name: Downgrade pyairnow to the manifest floor
+        if: matrix.pyairnow == 'floor'
+        run: |
+          python - <<'PYEOF'
+          import json
+          import re
+          import subprocess
+
+          with open("custom_components/airnow_station/manifest.json") as f:
+              requirements = json.load(f)["requirements"]
+          (req,) = [r for r in requirements if r.startswith("pyairnow")]
+          match = re.fullmatch(r"pyairnow>=([0-9.]+)", req)
+          if match is None:
+              raise SystemExit(
+                  f"cannot derive a floor from {req!r}; update this step"
+              )
+          subprocess.check_call(["pip", "install", f"pyairnow=={match.group(1)}"])
+          PYEOF
       - run: pytest tests -q --cov=custom_components.airnow_station --cov-fail-under=95

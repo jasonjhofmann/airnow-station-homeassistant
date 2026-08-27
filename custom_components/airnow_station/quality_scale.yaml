@@ -24,7 +24,9 @@ rules:
       recovery, duplicates).
   dependency-transparency:
     status: done
-    comment: pyairnow, pinned, on PyPI, OSS.
+    comment: pyairnow (floor pin >=1.3.1 so it cannot fight HA core's
+      airnow exact pin; CI tests the floor and the latest release), on
+      PyPI, OSS.
   docs-actions:
     status: exempt
     comment: No custom service actions.
