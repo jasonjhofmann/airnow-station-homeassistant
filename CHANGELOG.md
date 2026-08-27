@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.5.0 — 2026-08-27
+
+- **`pyairnow` is now a version floor (`>=1.3.1`), not an exact pin.**
+  HA core's own `airnow` integration exact-pins `pyairnow` (1.3.1 through
+  core 2026.7.x, 1.4.0 from 2026.8) in the same Python environment. Two
+  integrations exact-pinning different versions of one shared package
+  re-install over each other on every restart; a floor is satisfied by
+  every version core installs across this integration's supported HA
+  range, so neither integration ever triggers a reinstall of the other's
+  copy. No user-visible behavior changes.
+- **`api.py` no longer subclasses `WebServiceAPI` or calls its private
+  `_get`.** `AirNowDataAPI` now owns an equivalent request layer
+  (identical query params, session ownership, and `WebServiceError`
+  mapping, verified against the pyairnow 1.3.1 and 1.4.1 sources) and
+  imports only pyairnow's public error classes — which are byte-identical
+  across 1.3.1–1.4.1. This removes the private-API coupling that made an
+  exact pin load-bearing in the first place. The unused inherited
+  `.observations`/`.forecast` surface is gone with the subclass.
+- **CI now tests both ends of the declared range.** The `tests` job grew a
+  matrix leg that re-installs the *floor* version of `pyairnow` — parsed
+  out of `manifest.json` itself, so the leg cannot drift from what users
+  may actually resolve — alongside the existing latest-version leg
+  (`requirements_test.txt`, Dependabot-maintained).
+
 ## 0.4.1 — 2026-08-23
 
 - **`hacs.json` now declares `"country": "US"`.** AirNow is a US EPA
