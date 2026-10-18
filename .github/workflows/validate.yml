@@ -31,7 +31,18 @@ jobs:
       - run: pip install -r requirements_test.txt
       - run: ruff check custom_components tests scripts
       - run: ruff format --check custom_components tests scripts
-      - run: mypy --strict custom_components/airnow_station/
+      - uses: astral-sh/setup-uv@v7
+      # Type-checked against the declared support floor (hacs.json 2026.7.0), not the
+      # newest release: HA 2026.9 moved core to probatio and 2026.10 retyped schema
+      # arguments as probatio.Schema, so mypy against the latest HA rejects the
+      # voluptuous schemas the floor needs (probatio does not exist before 2026.9).
+      # HA still accepts voluptuous schemas at runtime; the tests job, which resolves
+      # the latest harness, covers runtime on the newest HA.
+      - run: >-
+          uv run --no-project --python 3.14
+          --with mypy --with homeassistant==2026.7.0 --with voluptuous
+          --with "$(grep '^pyairnow' requirements_test.txt)"
+          mypy --strict custom_components/airnow_station/
 
   tests:
     runs-on: ubuntu-latest

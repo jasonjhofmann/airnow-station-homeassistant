@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **CI: mypy now type-checks against the declared floor
+  (`homeassistant==2026.7.0`).** HA 2026.9 moved core from voluptuous to
+  probatio, and HA 2026.10 retyped schema arguments to match, so mypy against
+  the newest HA flagged the voluptuous schemas older releases need. The weekly
+  Validate run had failed on this since 2026-10-05. Typing only: HA still
+  accepts voluptuous schemas at runtime, and the test job still runs on the
+  newest HA. No integration code changes.
+
 ## 0.5.0 — 2026-08-27
 
 - **`pyairnow` is now a version floor (`>=1.3.1`), not an exact pin.**
