@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.1 — 2026-10-18
 
 - **CI: new Minimum supported HA job, now the only mypy run.** It reads the
   floor from `hacs.json` and the integration's requirements from
