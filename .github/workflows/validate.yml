@@ -31,19 +31,6 @@ jobs:
       - run: pip install -r requirements_test.txt
       - run: ruff check custom_components tests scripts
       - run: ruff format --check custom_components tests scripts
-      - uses: astral-sh/setup-uv@v7
-      # Type-checked against the declared support floor (hacs.json 2026.7.0), not the
-      # newest release: HA 2026.9 moved core to probatio and 2026.10 retyped schema
-      # arguments as probatio.Schema, so mypy against the latest HA rejects the
-      # voluptuous schemas the floor needs (probatio does not exist before 2026.9).
-      # HA still accepts voluptuous schemas at runtime; the tests job, which resolves
-      # the latest harness, covers runtime on the newest HA.
-      - run: >-
-          uv run --no-project --python 3.14
-          --with mypy --with homeassistant==2026.7.0 --with voluptuous
-          --with "$(grep '^pyairnow' requirements_test.txt)"
-          mypy --strict custom_components/airnow_station/
-
   tests:
     runs-on: ubuntu-latest
     strategy:
@@ -87,3 +74,60 @@ jobs:
           subprocess.check_call(["pip", "install", f"pyairnow=={match.group(1)}"])
           PYEOF
       - run: pytest tests -q --cov=custom_components.airnow_station --cov-fail-under=95
+
+  # Proves the floor declared in hacs.json is real. The other gates resolve
+  # the LATEST Home Assistant, so code could start depending on a newer API
+  # while HACS keeps offering the release to users on the declared floor.
+  # Reads the floor from hacs.json and the integration's own requirements
+  # from manifest.json, then imports every module and type-checks against
+  # that exact release.
+  #
+  # This is also the only mypy run. HA 2026.9 moved core to probatio and
+  # 2026.10 retyped schema arguments as probatio.Schema, so mypy against the
+  # latest HA rejects the voluptuous schemas older releases need (probatio
+  # does not exist before 2026.9). HA still accepts voluptuous schemas at
+  # runtime, and the test job covers runtime on the newest HA.
+  minimum-supported-ha:
+    name: Minimum supported HA (hacs.json floor)
+    runs-on: ubuntu-latest
+    env:
+      # Must satisfy the floor's requires-python (HA 2026.7.0 = Python
+      # 3.14.2+), and stay below 3.15: uv would otherwise pick CPython 3.15, where
+      # HA 2026.7.0's pinned Pillow has no wheel.
+      FLOOR_PYTHON: ">=3.14.2,<3.15"
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Pin the floor and the integration's requirements
+        run: |
+          python3 - <<'PY'
+          import json
+          floor = json.load(open("hacs.json"))["homeassistant"]
+          reqs = json.load(open("custom_components/airnow_station/manifest.json"))["requirements"]
+          with open("floor-requirements.txt", "w") as f:
+              f.write("\n".join([f"homeassistant=={floor}", "voluptuous", *reqs]) + "\n")
+          print(f"Declared Home Assistant floor: {floor}; requirements: {reqs}")
+          PY
+
+      - name: Import every module against the floor
+        run: |
+          uv run --no-project --python "$FLOOR_PYTHON" \
+            --with-requirements floor-requirements.txt \
+            python -c "
+          import importlib, pkgutil
+          import custom_components.airnow_station as pkg
+          names = [m.name for m in pkgutil.iter_modules(pkg.__path__)]
+          for name in names:
+              importlib.import_module(f'{pkg.__name__}.{name}')
+          print(f'{len(names)} modules import on the declared floor')
+          "
+
+      - name: Mypy (strict) against the floor
+        run: |
+          uv run --no-project --python "$FLOOR_PYTHON" \
+            --with-requirements floor-requirements.txt \
+            --with mypy \
+            mypy custom_components/airnow_station/

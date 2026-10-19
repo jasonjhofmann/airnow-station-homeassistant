@@ -2,13 +2,16 @@
 
 ## Unreleased
 
-- **CI: mypy now type-checks against the declared floor
-  (`homeassistant==2026.7.0`).** HA 2026.9 moved core from voluptuous to
-  probatio, and HA 2026.10 retyped schema arguments to match, so mypy against
-  the newest HA flagged the voluptuous schemas older releases need. The weekly
-  Validate run had failed on this since 2026-10-05. Typing only: HA still
-  accepts voluptuous schemas at runtime, and the test job still runs on the
-  newest HA. No integration code changes.
+- **CI: new Minimum supported HA job, now the only mypy run.** It reads the
+  floor from `hacs.json` and the integration's requirements from
+  `manifest.json`, then imports every module and runs mypy against that exact
+  Home Assistant release, so the declared floor can't silently go stale. mypy
+  no longer runs against the latest HA: HA 2026.9 moved core from voluptuous
+  to probatio, and HA 2026.10 retyped schema arguments to match, so mypy there
+  flags the voluptuous schemas older releases need. The weekly Validate run
+  had failed on this since 2026-10-05. Typing only: HA still accepts
+  voluptuous schemas at runtime, and the test job still runs on the newest HA.
+  No integration code changes.
 
 ## 0.5.0 — 2026-08-27
 
