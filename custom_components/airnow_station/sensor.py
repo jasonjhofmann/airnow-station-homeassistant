@@ -28,8 +28,8 @@ ATTR_DOMINANT_POLLUTANT = "dominant_pollutant"
 ATTR_CATEGORY = "category"
 
 # Concentration sensors, keyed by the *response* parameter name. Ozone, NO2,
-# and SO2 are reported in ppb, which the matching HA device classes do not
-# accept (they require μg/m³), so those go without a device class.
+# and SO2 are reported in ppb and have no device class yet; the matching HA
+# device classes accept ppb on the 2026.7 floor, so they can be added.
 CONCENTRATION_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
     "PM2.5": SensorEntityDescription(
         key="pm25",

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.2 — 2026-10-20
+
+- **README brought up to date.** Install now starts from the HACS default
+  repository (listed via hacs/default#8407), with the custom repository
+  steps kept as a fallback, and the badge says HACS Default. The known
+  limitation about ozone, NO₂, and SO₂ no longer claims Home Assistant's
+  device classes reject ppb; they accept it on every supported core, the
+  integration just doesn't set them yet. HACS shows the README from the
+  latest release, which is why this ships as one. No integration code
+  changes (one code comment corrected to match).
+
 ## 0.5.1 — 2026-10-18
 
 - **CI: new Minimum supported HA job, now the only mypy run.** It reads the

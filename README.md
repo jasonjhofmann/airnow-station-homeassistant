@@ -2,7 +2,7 @@
 
 [![GitHub release](https://img.shields.io/github/v/release/jasonjhofmann/airnow-station-homeassistant?include_prereleases)](https://github.com/jasonjhofmann/airnow-station-homeassistant/releases)
 [![Validate](https://github.com/jasonjhofmann/airnow-station-homeassistant/actions/workflows/validate.yml/badge.svg)](https://github.com/jasonjhofmann/airnow-station-homeassistant/actions/workflows/validate.yml)
-[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![HACS Default](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
 [![License](https://img.shields.io/github/license/jasonjhofmann/airnow-station-homeassistant)](LICENSE)
 
 Home Assistant integration for a **single AirNow monitoring station**, using
@@ -27,11 +27,19 @@ concentrations** plus per-pollutant **AQI**.
 **Requires Home Assistant 2026.7.0 or newer** (which runs on Python 3.14).
 HACS enforces this floor and will not offer the install on older cores.
 
-Until this repo is in the HACS default store, add it as a custom repository:
+AirNow Station is in the HACS default repository, so you don't need to add a
+custom repository.
+
+1. In HACS, search for **AirNow Station** and download it.
+2. Restart Home Assistant.
+
+[![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jasonjhofmann&repository=airnow-station-homeassistant&category=integration)
+
+If the search does not find it, add it as a custom repository instead:
 
 1. HACS → ⋮ → *Custom repositories* → add
    `https://github.com/jasonjhofmann/airnow-station-homeassistant` (type: Integration).
-2. Install **AirNow Station** and restart Home Assistant.
+2. Download **AirNow Station** and restart Home Assistant.
 
 ## Configuration
 
@@ -138,9 +146,10 @@ template:
 - **CO often has no AQI.** Stations report CO concentrations, but AirNow
   frequently returns `-999` for its AQI at ambient levels — the CO AQI
   sensor then reads `unknown`. This is upstream behavior.
-- **ppb pollutants carry no device class.** Home Assistant's ozone/NO₂/SO₂
-  device classes require μg/m³; AirNow reports ppb, so those sensors have
-  units but no device class.
+- **Ozone, NO₂, and SO₂ sensors have no device class yet.** They report in
+  ppb with a unit and a state class. Home Assistant's ozone, NO₂, and SO₂
+  device classes accept ppb on every supported core, so a later release
+  can add them.
 - **Parameter sets can change.** If a station starts reporting a new
   pollutant, reload the integration (or restart) to create its sensors.
 - **Rate limits.** AirNow keys default to 500 requests/hour; this
