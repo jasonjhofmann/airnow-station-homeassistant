@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.3 — 2026-10-20
+
+- **Ozone, NO₂, and SO₂ sensors now have device classes** (`ozone`,
+  `nitrogen_dioxide`, `sulphur_dioxide`), like PM2.5, PM10, and CO already
+  did. Home Assistant accepts AirNow's ppb for all three on the 2026.7
+  floor. Units and statistics are unchanged; Home Assistant now also lets
+  you pick another display unit for them. A new test checks every
+  concentration sensor's unit is one its device class accepts. The README
+  limitation that said they had none is gone.
+
 ## 0.5.2 — 2026-10-20
 
 - **README brought up to date.** Install now starts from the HACS default

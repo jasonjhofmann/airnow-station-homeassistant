@@ -28,6 +28,7 @@ async def test_sensors(hass: HomeAssistant, mock_api) -> None:
     assert ozone.state == "49.0"
     assert ozone.attributes["observed_utc"] == "2026-06-09T19:00"
     assert ozone.attributes["raw_concentration"] == 47.0
+    assert ozone.attributes["device_class"] == "ozone"
 
     # 20:00 sentinel row skipped: PM2.5 comes from 19:00.
     pm25 = state_by_unique_id(hass, "320030044-pm25")
@@ -296,3 +297,28 @@ def test_concentration_attrs_none_when_param_missing(mock_api) -> None:
     coordinator.data = {}
     assert sensor.extra_state_attributes is None
     assert sensor.native_value is None
+
+
+def test_device_classes_accept_the_reported_units() -> None:
+    """Ozone, NO2, and SO2 carry device classes that accept AirNow's ppb.
+
+    Every concentration sensor with a device class must report a unit Home
+    Assistant accepts for that class, or HA logs a warning for the entity.
+    """
+    from homeassistant.components.sensor import DEVICE_CLASS_UNITS, SensorDeviceClass
+
+    from custom_components.airnow_station.sensor import CONCENTRATION_DESCRIPTIONS
+
+    assert CONCENTRATION_DESCRIPTIONS["OZONE"].device_class is SensorDeviceClass.OZONE
+    assert (
+        CONCENTRATION_DESCRIPTIONS["NO2"].device_class
+        is SensorDeviceClass.NITROGEN_DIOXIDE
+    )
+    assert (
+        CONCENTRATION_DESCRIPTIONS["SO2"].device_class
+        is SensorDeviceClass.SULPHUR_DIOXIDE
+    )
+    for param, description in CONCENTRATION_DESCRIPTIONS.items():
+        assert description.device_class is not None, param
+        units = DEVICE_CLASS_UNITS[description.device_class]
+        assert description.native_unit_of_measurement in units, param
